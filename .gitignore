@@ -1,0 +1,12 @@
+.DS_Store
+/*.log
+data/
+runs/**
+/venv/
+checkpoints_cyclegan/
+*.pyc
+*.pkl
+*.png
+*.tar
+*.zip
+runs*
