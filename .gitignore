@@ -5,7 +5,6 @@ runs/**
 /venv/
 checkpoints_cyclegan/
 *.pyc
-*.pkl
 *.png
 *.tar
 *.zip
