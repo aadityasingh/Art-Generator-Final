@@ -32,7 +32,7 @@ class Trainer:
     def __init__(self, model, loss, train_loader, test_loader, params):
         self.model = model
         self.params = params
-        self.params['start_epoch'] = 0
+        # self.params['start_epoch'] = 0
 
         self.train_loader = train_loader
         self.test_loader = test_loader
@@ -48,7 +48,6 @@ class Trainer:
 
     def train(self, opts):
         self.model.train()
-        kwargs = {}
         last_loss = 10000000
         save_new_checkpoint = False
         for epoch in range(self.params['start_epoch'], self.params['num_epochs']):
@@ -66,11 +65,12 @@ class Trainer:
                 self.optimizer.step()
                 loss_list.append(loss.data[0].item())
 
+            print(loss_list)
             print("epoch {}: - training loss: {}".format(epoch, np.mean(loss_list)))
             new_lr = self.adjust_learning_rate(epoch)
             print('learning rate:', new_lr)
 
-            if epoch % (opts.test_every//2) == 0:
+            if epoch % opts.test_every == 0:
                 new_loss = self.test(epoch)
                 if new_loss < last_loss:
                     self.save_checkpoint({
@@ -80,8 +80,6 @@ class Trainer:
                     })
                     print("Saved new checkpoint!")
                 last_loss = new_loss
-
-            if epoch % opts.test_every == 0:
                 self.summary_writer.add_scalar('training/loss', np.mean(loss_list), epoch)
                 self.summary_writer.add_scalar('training/learning_rate', new_lr, epoch)
                 # self.save_checkpoint({
@@ -148,7 +146,7 @@ class Trainer:
         X, fake_X = utils.to_data(self.fixed_X), utils.to_data(fake_X)
 
         merged = self.merge_images(X, fake_X)
-        path = os.path.join(os.path.join(os.path.dirname(__file__),'samples'), 'sample-{:06d}.png'.format(epoch))
+        path = self.params['sample_dir']+'sample-{:06d}.png'.format(epoch)
         scipy.misc.imsave(path, merged)
         print('Saved {}'.format(path))
 
@@ -182,7 +180,7 @@ class Trainer:
             param_group['lr'] = learning_rate
         return learning_rate
 
-    def save_checkpoint(self, state, is_best=False, filename='checkpoint2.pth.tar'):
+    def save_checkpoint(self, state, is_best=False, filename='checkpoint.pth.tar'):
         '''
         a function to save checkpoint of the training
         :param state: {'epoch': cur_epoch + 1, 'state_dict': self.model.state_dict(),

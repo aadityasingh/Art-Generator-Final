@@ -44,7 +44,7 @@ class ResnetBlock(nn.Module):
 
 
 class VAE(nn.Module):
-    def __init__(self, conv_dim=64, init_zero_weights=False):
+    def __init__(self, conv_dim=64, latent_vector=800, init_zero_weights=False):
         super(VAE, self).__init__()
         # self.conv1 = conv(3, conv_dim, 4) 
         # self.conv2 = conv(conv_dim, conv_dim*2, 4)
@@ -62,7 +62,7 @@ class VAE(nn.Module):
         self.conv2 = conv(conv_dim, conv_dim*2, 4)
         self.conv3 = conv(conv_dim*2, conv_dim*4, 4)
 
-        latent_vector = 800
+        # latent_vector = 800
 
         self.mean = linear(conv_dim * 4 * 16 * 16, latent_vector)
         self.noise = linear(conv_dim * 4 * 16 * 16, latent_vector)

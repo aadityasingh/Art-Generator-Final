@@ -8,4 +8,5 @@ checkpoints_cyclegan/
 *.png
 *.tar
 *.zip
+dfcvae/old_runs/**
 runs*
