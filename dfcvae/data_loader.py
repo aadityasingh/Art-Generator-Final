@@ -7,7 +7,7 @@ from torchvision import datasets
 from torchvision import transforms
 
 
-def load_data(opts):
+def load_data(data_type, opts):
     """Creates training and test data loaders.
     """
     transform = transforms.Compose([
@@ -17,8 +17,8 @@ def load_data(opts):
                 ])
 
     print(type(data_type))
-    train_path = os.path.join(os.path.dirname(__file__),'data',opts['dataset'],'train')
-    test_path = os.path.join(os.path.dirname(__file__),'data',opts['dataset'],'test')
+    train_path = os.path.join(os.path.dirname(__file__),'data','train3','train')
+    test_path = os.path.join(os.path.dirname(__file__),'data','train3','test')
 
     train_dataset = datasets.ImageFolder(train_path, transform)
     test_dataset = datasets.ImageFolder(test_path, transform)
