@@ -32,7 +32,7 @@ def main():
     parser.add_argument('-t', action="store", default='acc', dest='type', help='Type of evaluation [pred|acc]')
     parser.add_argument('--isdecaf', action="store_true", dest='isdecaf',
                         help='if the model is a decaf6 type')
-    parser.add_argument('-k', action="store", default='1,3,5', type=str, dest='k', help='top-k number')
+    parser.add_argument('-k', action="store", default='1,3,5', type=str, dest='k', help='top-k numbers')
     parser.add_argument('--data_path', action="store",
                         default=join(PATH, '../data/wikipaintings_small/wikipaintings_test'), dest='data_path',
                         help='Path of the data (image or train folder)')
@@ -43,7 +43,6 @@ def main():
     parser.add_argument('-b', action="store_true", dest='b', default=DEFAULT_BAGGING, help='Sets bagging')
     parser.add_argument('-p', action="store", dest='preprocessing', default=DEFAULT_PREPROCESSING,
                         help='Type of preprocessing : [imagenet|wp]')
-
 
     args = parser.parse_args()
 
