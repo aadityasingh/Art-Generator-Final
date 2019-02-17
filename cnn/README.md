@@ -4,86 +4,59 @@ Note that the overall project (Art-Generator-Final) worked only with the ResNet5
 
 We also have a folder `old/` that contains an old implementation of transfer learning from ResNet50 for art style classification in PyTorch. No guarantees that any of it works as expected, as we switched to building on top of the original Tensorflow/Keras implementation. We mostly incorporated for pure documentation, and because it might be useful as a starting point for building a pytorch implementation in the future to create allow for easier interaction with the rest of the project.
 
-Below is the original README.md of RASTA:
 
-# RASTA
+# Setup
 
-The Rasta project aims at recognising art style automatically using pixel data only (i.e. no meta-data). For more details about the methodology and the results, see the publication.
+The data folder should be organized with a separate folders train, validation, and test directory. You may use `python/split_data.py` to easily do so. In each directory should be a series of directories, one per art style, that contain the images of artwork of that style.
 
-Adrian Lecoutre, Benjamin Negrevergne and Florian Yger. Rasta: Recognizing art style automatically in painting with deep learning. In Asian Conference on Machine Learning, 2017.
+# Usage
 
-# How to use this code
+To train a model using data, use `python/run.py`. You can visualize the loss and accuracy over time for the training and validation dataset via `python/graph_history.py`. The actual code for training is found in `python/models/processing.py`.
 
-## Setup Rasta Python environment with Pip
+To test a model using data, use `python/evaluation.py`. 
 
-You can install  python requirements with
+## Options for Training
 
-    pip3 install -r python/requirements.txt
+* Training directory `--train_path`: path to training data
+* Validation directory `--val_path`: path to validiation data
+* Model `-m`: we've currently only leveraged the `resnet` option, as the original RASTA project found this model, ResNet50 to work the best among the models tested. Other options include AlexNet, Inception, and various other sizes of ResNet. New models should be written in the `python/models` directory and imported into `run.py` for use.
+* Batch size `-b`: batch size
+* Epochs `-e`: number of epochs
+* Horizontal flips `-f`: whether to augment the dataset with horizontal flips or not
+* Optimizer `--optim`: optimizer to choose
+    * Momentum `--mom`: momentum for SGD momentum optimizer
 
-See `python/requirements.txt` for the complete list of requirements.
+*Training Layer Options:*
 
-If you have access to GPUs  we encourage you to use them, this will speedup both inference and training. To use GPU, install tensorflow-gpu in addition to previous packages.
+* Number of retrainable layers `-n`: number of retrainable layers in the model
+* Start of retrainable layers `--start-layer`: first retrainable layer. If None, by default the last layers are retrainable.
 
-    pip3 install tensorflow-gpu
+*Currently haven't unused and left as default:*
 
+* Dropout `-d`: dropout rate (unused)
+* Distortions `--distortions`: distortions
+* ImageNet preprocessing `-p`: use ImageNet preprocessing or not
 
-## Download model files (mandatory)
+## Options for Testing
 
-    cd models
-    wget www.lamsade.dauphine.fr/~bnegrevergne/webpage/software/rasta/rasta_models.tgz
-    tar xzvf rasta_models.tgz
-    cd ../
+* Type of evaluation `-t`: accuracy calculation or prediction
+* Top-k numbers `-k`: In accuracy mode, this can calculate the accuracy for a list of top-k accuracies. In prediction mode, only expects one number (takes the first number if an array) and predicts the top k predictions.
+* Path to data `--data_path`: path to test data
+* Path to model `--model_path`: path to saved model
+* Save to JSON `-j`: only for prediction mode
+* Save to results file `-s`: only for accuracy mode
 
-## Download extra data files (optional)
+*Currently haven't unused and left as default:*
 
-   If you want to download the full wikipaintings dataset (the one from WikiArt), execute the following commands. Warning: the file is about ~20GiB, we suggest that you first try with the small datasets provided in `data/wikipaintaings_small`.
+* Bagging `-b`
+* Type of preprocessing `-p`
 
-    cd data
-    wget www.lamsade.dauphine.fr/~bnegrevergne/webpage/software/rasta/wikipaintings_full.tgz
-    tar xzvf wikipaintings_full.tgz
-    cd ../
+## TODO: Confusion Matrix
 
-## Predict the style of one image
-
-Use
-
-    python3 python/evaluation.py -t pred  --data_path=PATH_TO_IMAGE
-
-Where `PATH_TO_IMAGE` points toward a valid jpeg image file.
-
-See `python3 python/evaluation.py -h` for more details 
-
-## Evaluate Rasta models on a large batch of images
-
-You can evaluate the accuracy of the default Rasta model using:
-
-    python3 python/evaluation.py
-
-This will evaluate the accuracy on a the small test set available in `wikipaintings_small/wikipaintings_test` using the model in `models/default`.
-
-You can evaluate the accuracy of other Rasta models, or using other datasets with:
-
-    python3 python/evaluation.py --model_path=MODEL_PATH --data_path=DATA_PATH
-
-where `MODEL_PATH` is the path to a .h5 model file, and  `DATA_PATH` is a path to a directory containing the test set. In the test set, there should be one sub-directory for each class containing all the images of this class. See `wikipaintings_small/wikipaintings_test` for an example. 
+Currently not working :(
 
 
-See `python3 python/evaluation.py -h` for more details about the options.
+If you are looking for the original README.md of RASTA, please navigate to RASTA_README.md
 
-Note: At the moment `--isdecaf` is necessary if you want to evaluate models based on decaf. Hopefully, this will be fixed soon. 
-
-# License
-
-See LICENSE file.
-
-# Authors
-
-- Adrian Lecoutre
-- Benjamin Negrevergne
-- Florian Yger
-
-# Contact author
-
-Benjamin Negrevergne: firstname.lastname @ dauphine.fr
 
 
