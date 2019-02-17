@@ -27,12 +27,10 @@ def graph_num_layers(measure='val_loss'):
 
     if measure == 'val_loss':
         ylabel = 'Validation loss'
-        ax.invert_yaxis()
     elif measure == 'val_acc':
         ylabel = 'Validation accuracy'
     elif measure == 'loss':
         ylabel = 'Training loss'
-        ax.invert_yaxis()
     elif measure == 'acc':
         ylabel = 'Training accuracy'
     else:
@@ -45,11 +43,11 @@ def graph_num_layers(measure='val_loss'):
     # plt.show()
     fig.savefig(f'../../assets/retrain_layers_{measure}.png', dpi = 300)
 
-OPT_FOLDERS = ['resnet_rmsprop_n-trainable-30', 'resnet_sgd_mom_n-trainable-30', 'resnet_amsgrad_n-trainable-30']
+OPTIM_FOLDERS = ['resnet_rmsprop_n-trainable-30', 'resnet_sgd_mom_n-trainable-30', 'resnet_amsgrad_n-trainable-30']
 
-def graph_opts(opt_folders=OPT_FOLDERS, measure='val_loss'):
+def graph_optims(optim_folders=OPTIM_FOLDERS, measure='val_loss'):
     histories = []
-    for folder_name in opt_folders:
+    for folder_name in optim_folders:
         pickle_path = os.path.join(SAVING_DIR, folder_name, 'history.pck')
 
         with open(pickle_path, 'rb') as pkl:
@@ -67,12 +65,10 @@ def graph_opts(opt_folders=OPT_FOLDERS, measure='val_loss'):
 
     if measure == 'val_loss':
         ylabel = 'Validation loss'
-        ax.invert_yaxis()
     elif measure == 'val_acc':
         ylabel = 'Validation accuracy'
     elif measure == 'loss':
         ylabel = 'Training loss'
-        ax.invert_yaxis()
     elif measure == 'acc':
         ylabel = 'Training accuracy'
     else:
@@ -91,8 +87,8 @@ if __name__ == '__main__':
     # graph_num_layers(measure='loss')
     # graph_num_layers(measure='acc')
 
-    graph_opts()
-    graph_opts(measure='val_acc')
+    graph_optims()
+    graph_optims(measure='val_acc')
 
     # parser = argparse.ArgumentParser(description='Description')
     # parser.add_argument('-f', action="store", default='resnet_rmsprop_n-trainable-30/', dest='folder', 
