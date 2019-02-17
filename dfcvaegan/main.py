@@ -55,7 +55,6 @@ def gen_image(checkpoint_file):
 	model.load_state_dict(checkpoint['state_dict'])
 	print(len(data.train_set))
 	# print(data.train_set[0][0])
-# <<<<<<< HEAD
 	print(data.train_set[0][0].size())
 	batch1 = data.train_set[0][0].unsqueeze(0)
 	print(batch1.size())
