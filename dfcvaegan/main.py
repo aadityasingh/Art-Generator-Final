@@ -96,6 +96,8 @@ if __name__ == "__main__":
 	opts = parser.parse_args()
 	print(opts.data_path)
 	print("Using movements", opts.movements)
+	print("Balancing classes?", opts.balance_classes)
+	print("Random cropping?", opts.random_crop)
 	model, train_loader, test_loader = make_model(opts)
 	# counts = [0, 0]
 	# for i in range(2):
