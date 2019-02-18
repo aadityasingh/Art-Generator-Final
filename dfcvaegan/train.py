@@ -72,9 +72,8 @@ class Trainer:
                 self.optimizer.step()
                 loss_list.append(loss.item())
 
-            print(len(loss_list))
-            print(np.sum(loss_list))
-            print("epoch {}: - training loss: {}".format(epoch, np.mean(loss_list)))
+            epoch_avg_loss = np.mean(loss_list)/self.opts.batch_size
+            print("epoch {}: - training loss: {}".format(epoch, epoch_avg_loss))
             new_lr = self.adjust_learning_rate(epoch)
             print('learning rate:', new_lr)
 
@@ -88,7 +87,7 @@ class Trainer:
                     })
                     print("Saved new checkpoint!", epoch)
                 last_loss = new_loss
-                self.summary_writer.add_scalar('training/loss', np.mean(loss_list), epoch)
+                self.summary_writer.add_scalar('training/loss', epoch_avg_loss, epoch)
                 self.summary_writer.add_scalar('training/learning_rate', new_lr, epoch)
                 # self.save_checkpoint({
                 #     'epoch': epoch + 1,
