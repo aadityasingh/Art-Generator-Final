@@ -37,9 +37,9 @@ class Trainer:
         self.summary_dir = '/'.join([opts.base_path, opts.run, 'logs'])
         self.checkpoint_dir = '/'.join([opts.base_path, opts.run, 'checkpoints'])
         self.sample_dir = '/'.join([opts.base_path, opts.run, 'samples'])
-        create_dir(summary_dir)
-        create_dir(checkpoint_dir)
-        create_dir(sample_dir)
+        create_dir(self.summary_dir)
+        create_dir(self.checkpoint_dir)
+        create_dir(self.sample_dir)
 
         self.train_loader = train_loader
         self.test_loader = test_loader
