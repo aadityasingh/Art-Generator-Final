@@ -85,7 +85,7 @@ def create_parser():
 
 	parser.add_argument('--num_workers', type=int, default=1)
 	parser.add_argument('--movements', dest='movements', nargs='*', default=ALL_MOVEMENTS)
-	parser.add_argument('--data_path', default='/'.join(['.','data','wikiart']))
+	parser.add_argument('--data_path', default='/'.join(['', 'dfcvaegan','data','wikiart']))
 	parser.add_argument('--balance_classes', type=bool, default=True)
 	parser.add_argument('--random_crop', type=bool, default=False)
 	return parser
