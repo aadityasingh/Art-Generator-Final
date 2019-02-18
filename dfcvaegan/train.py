@@ -65,7 +65,7 @@ class Trainer:
                 loss = self.loss(recon_batch, data, mu, logvar)
                 loss.backward()
                 self.optimizer.step()
-                loss_list.append(loss.data[0].item())
+                loss_list.append(loss.item())
 
             print(loss_list)
             print("epoch {}: - training loss: {}".format(epoch, np.mean(loss_list)))
