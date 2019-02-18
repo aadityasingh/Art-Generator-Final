@@ -15,7 +15,7 @@ def pil_loader(path):
         return img.convert('RGB')
 
 class ArtDataset(Dataset):
-    def __init__(self, root, opts target_transform=None):
+    def __init__(self, root, opts, target_transform=None):
         self.image_size = opts.image_size
         self.resize_transform = transforms.Compose([
                         transforms.Resize((self.image_size, self.image_size)),
