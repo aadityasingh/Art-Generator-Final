@@ -9,11 +9,11 @@ import os
 from model import DCDiscriminator
 
 class Loss(nn.Module):
-    def __init__(self):
+    def __init__(self, opts):
         super(Loss, self).__init__()
         self.mse_loss = nn.MSELoss(size_average=False)
         self.DFCNet = DCDiscriminator(conv_dim=64)
-        self.DFCNet.load_state_dict(torch.load(os.path.join(os.path.dirname(__file__), 'D_Xfull.pkl'), map_location=lambda storage, loc: storage))
+        self.DFCNet.load_state_dict(torch.load('/'.join([opts.base_path, 'D_Xfull.pkl']), map_location=lambda storage, loc: storage))
         if torch.cuda.is_available():
         	self.DFCNet.cuda()
         for param in self.DFCNet.parameters():

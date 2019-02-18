@@ -34,7 +34,7 @@ def make_model(opts):
 
 def train(model, train_loader, test_loader, opts):
 	optimizer = optim.Adam(model.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
-	loss = Loss()
+	loss = Loss(opts)
 
 	if opts.load_from_chkpt != None:
 		checkpoint = torch.load('/'.join([os.path.dirname(__file__),opts.run,'checkpoint.pth.tar']))
@@ -81,7 +81,7 @@ def create_parser():
 	parser.add_argument('--image_size', type=int, default=128)
 	parser.add_argument('--batch_size', type=int, default=16)
 	parser.add_argument('--start_epoch', type=int, default=0)
-	parser.add_argument('--base_path', default='.')
+	parser.add_argument('--base_path', default='/dfcvaegan')
 
 	parser.add_argument('--num_workers', type=int, default=1)
 	parser.add_argument('--movements', dest='movements', nargs='*', default=ALL_MOVEMENTS)
