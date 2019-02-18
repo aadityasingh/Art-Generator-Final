@@ -23,7 +23,7 @@ parser.add_argument('-m', action="store", default='resnet',dest='model_name',hel
 parser.add_argument('-b', action="store", default=32, type=int,dest='batch_size',help='Size of the batch.')
 parser.add_argument('-e', action="store", default=10,type=int,dest='epochs',help='Number of epochs')
 parser.add_argument('-f', action="store", default=False, type=bool,dest='horizontal_flip',help='Set horizontal flip or not [True|False]')
-parser.add_argument('-n', action="store", default=0, type=int,dest='n_layers_trainable',help='Set the number of last trainable layers')
+parser.add_argument('-n', action="store", default=30, type=int,dest='n_layers_trainable',help='Set the number of retrainable layers')
 parser.add_argument('-d', action="store", default=0, type=float,dest='dropout_rate',help='Set the dropout_rate')
 
 parser.add_argument('-p', action="store",dest='preprocessing',help='Set imagenet preprocessing or not')
@@ -33,9 +33,9 @@ parser.add_argument('--distortions', action="store", type=float,dest='disto',def
 parser.add_argument('--train_path', action="store", default=join(PATH, '../../data/wikiart_rasta/train'),dest='training_path',help='Path of the training data directory')
 parser.add_argument('--val_path', action="store", default=join(PATH, '../../data/wikiart_rasta/val'),dest='validation_path',help='Path of the validation data directory')
 
-parser.add_argument('--opt', action="store", default='rmsprop', dest='optimizer',help='Optimizer to use')
+parser.add_argument('--optim', action="store", default='rmsprop', dest='optimizer',help='Optimizer to use [rmsprop|sgd|sgd_mom|adam|amsgrad]')
 parser.add_argument('--mom', action="store", default=0.9, type=float, dest='momentum',help='Momentum for SGD')
-parser.add_argument('--start-layer', action="store", type=int, default=None, dest='start_layer',help='Layer to start one')
+parser.add_argument('--start-layer', action="store", type=int, default=None, dest='start_layer',help='Layer to start on')
 
 args = parser.parse_args()
 
