@@ -18,9 +18,9 @@ This guide is somewhat specific to the ComputingChallenge Project we were a part
 5. Once in your instance, you'll need to make an NVIDIA NGC account and get an APIKEY and use that. To get the apikey, go to:https://ngc.nvidia.com/configuration/api-key after making an account.
 6. Once you have this, go to your instance and do `docker login nvcr.io` and then `docker pull nvcr.io/nvidia/pytorch:18.02-py3`. This will take a few minutes as well.
 7. Also on your VM, do `gcloud init` and `gcloud auth application-default login`. I'm not sure how necessary the second thing is, but it should help with getting the datafiles from the bucket. If you run into issues, you probably just need to do some commands of the form: `sudo chown -R $USER FOLDERTOCHANGE` to change the permissions to your user.
-8. At this point, you're ready to actually get our code and dataset. This can be pulled from the bucket (the first time, after that I recommend just scp'ing the specific files you need to update). The command to do this is: `mkdir cromagen
-gsutil -m cp -r cromagen gs://aaditya-cromagen-files`. For clarity, the -m flag allows gsutil to parallelize the port and the -r flag is for recursive copy. This command will take a bit (not more than 30 min). You should know have a dfcvaegan folder in your cromagen folder. The dfcvaegan folder contains all the files.
-9. To actually run stuff, we're going to have some docker things that I haven't configured yet so hold off on running things. For the code changes you make right now, just running locally for a few iterations should help debug syntax errors/work for most things. I am working on docker right now
+8. At this point, you're ready to actually get our code and dataset. This can be pulled from the bucket (the first time, after that I recommend just scp'ing the specific files you need to update). The command to do this is: `
+gsutil -m cp -r gs://aaditya-cromagen-files/dfcvaegan $HOME/`. For clarity, the -m flag allows gsutil to parallelize the port and the -r flag is for recursive copy. This command will take a bit (not more than 30 min). You should know have a dfcvaegan folder in your cromagen folder. The dfcvaegan folder contains all the files. Again, you might need to change some ownerships to get it to work.
+9. At this point, most of the stuff is ready. All you need to do is build our custom docker image with the extra python packages that aren't in the nvidia image then run it!
 
 
 ## Deep Feature Consistent Variational Autoencoder (located in folder dfcvae/)

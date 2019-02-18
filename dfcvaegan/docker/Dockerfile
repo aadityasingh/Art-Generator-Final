@@ -1,6 +1,6 @@
-FROM nvidia/cuda-9.0
+FROM nvcr.io/nvidia/pytorch:18.02-py3.10
 
-RUN sudo pip install progressbar2 tensorflow-gpu
+RUN sudo pip install tensorboardX tqdm
 
 
 
