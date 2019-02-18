@@ -67,7 +67,8 @@ class Trainer:
                 self.optimizer.step()
                 loss_list.append(loss.item())
 
-            print(loss_list)
+            print(len(loss_list))
+            print(np.sum(loss_list))
             print("epoch {}: - training loss: {}".format(epoch, np.mean(loss_list)))
             new_lr = self.adjust_learning_rate(epoch)
             print('learning rate:', new_lr)
@@ -103,9 +104,9 @@ class Trainer:
                 data = data.cuda()
             data = Variable(data)
             recon_batch, mu, logvar = self.model.forward1(data)
-            test_loss += self.loss(recon_batch, data, mu, logvar).data[0]
-            mse_loss += self.loss.mse(recon_batch, data).data[0]
-            kld_loss += self.loss.kld(mu, logvar).data[0]
+            test_loss += self.loss(recon_batch, data, mu, logvar).item()
+            mse_loss += self.loss.mse(recon_batch, data).item()
+            kld_loss += self.loss.kld(mu, logvar).item()
 
         test_loss /= len(self.test_loader.dataset)
         mse_loss /= len(self.test_loader.dataset)
