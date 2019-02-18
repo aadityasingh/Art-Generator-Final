@@ -71,7 +71,7 @@ def gen_image(checkpoint_file):
 def create_parser():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--epochs', dest='epochs', type=int, default = 10000)
-	parser.add_argument('--test_every', dest='test_every', type = int, default = 50)
+	parser.add_argument('--test_every', dest='test_every', type = int, default = 2)
 	parser.add_argument('--load_from_chkpt', dest='load_from_chkpt', default=None)
 	parser.add_argument('--lr', dest='lr', type=float, default=0.001)
 	parser.add_argument('--lr_decay', dest='lr_decay', type=float, default=0.995)
