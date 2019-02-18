@@ -29,6 +29,10 @@ class ArtDataset(Dataset):
                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
         self.random_crop = opts.random_crop
+        if self.random_crop:
+            print("Using random crop")
+        else:
+            print("Using resize transform")
 
         self.samples = []
         self.class_counts = [0]*len(opts.movements)

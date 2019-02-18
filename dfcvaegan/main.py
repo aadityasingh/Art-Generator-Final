@@ -86,8 +86,8 @@ def create_parser():
 	parser.add_argument('--num_workers', type=int, default=1)
 	parser.add_argument('--movements', dest='movements', nargs='*', default=ALL_MOVEMENTS)
 	parser.add_argument('--data_path', default='/'.join(['', 'dfcvaegan','data','wikiart']))
-	parser.add_argument('--balance_classes', action='store_true', default=True)
-	parser.add_argument('--random_crop', action='store_true', default=False)
+	parser.add_argument('--balance_classes', type=int, default=1)
+	parser.add_argument('--random_crop', type=int, default=0)
 	return parser
 
 
@@ -96,8 +96,6 @@ if __name__ == "__main__":
 	opts = parser.parse_args()
 	print(opts.data_path)
 	print("Using movements", opts.movements)
-	print("Balancing classes?", opts.balance_classes)
-	print("Random cropping?", opts.random_crop)
 	model, train_loader, test_loader = make_model(opts)
 	# counts = [0, 0]
 	# for i in range(2):
