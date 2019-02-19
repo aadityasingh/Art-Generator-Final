@@ -37,9 +37,10 @@ def train(model, train_loader, test_loader, opts):
 	loss = Loss(opts)
 
 	if opts.load_from_chkpt != None:
-		checkpoint = torch.load('/'.join([os.path.dirname(__file__),opts.run,'checkpoint.pth.tar']))
+		checkpoint = torch.load('/'.join([opts.base_path,opts.run,opts.load_from_chkpt]))
 		model.load_state_dict(checkpoint['state_dict'])
 		opts.start_epoch = checkpoint['epoch']
+		print(opts.start_epoch)
 		optimizer.load_state_dict(checkpoint['optimizer'])
 
 	trainer = Trainer(model, optimizer, loss, train_loader, test_loader, opts)
@@ -72,7 +73,9 @@ def create_parser():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--epochs', dest='epochs', type=int, default = 10000)
 	parser.add_argument('--test_every', dest='test_every', type = int, default = 2)
+	parser.add_argument('--checkpoint_every', dest='checkpoint_every', type = int, default = 4)
 	parser.add_argument('--load_from_chkpt', dest='load_from_chkpt', default=None)
+	parser.add_argument('--new_chkpt_fname', dest='new_chkpt_fname', default="checkpoint.pth.tar")
 	parser.add_argument('--lr', dest='lr', type=float, default=0.001)
 	parser.add_argument('--lr_decay', dest='lr_decay', type=float, default=0.995)
 	parser.add_argument('--lr_step', dest='lr_step', type=int, default=1)

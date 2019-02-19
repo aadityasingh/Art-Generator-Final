@@ -8,5 +8,6 @@ checkpoints_cyclegan/
 *.png
 *.tar
 *.zip
+dfcvaegan/*Class*/**
 dfcvae/old_runs/**
 runs*
