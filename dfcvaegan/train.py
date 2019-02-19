@@ -25,6 +25,8 @@ import numpy as np
 import scipy
 import scipy.misc
 
+from utils import create_dir
+
 
 # torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
@@ -32,9 +34,12 @@ class Trainer:
     def __init__(self, model, optimizer, loss, train_loader, test_loader, opts):
         self.model = model
         self.opts = opts
-        self.summary_dir = '/'.join([opts.base_path, opts.run, 'logs'])
-        self.checkpoint_dir = '/'.join([opts.base_path, opts.run, 'checkpoints'])
-        self.sample_dir = '/'.join([opts.base_path, opts.run, 'samples'])
+        self.summary_dir = '/'.join([opts.base_path, 'runs', opts.run, 'logs'])
+        self.checkpoint_dir = '/'.join([opts.base_path, 'runs', opts.run, 'checkpoints'])
+        self.sample_dir = '/'.join([opts.base_path, 'runs', opts.run, 'samples'])
+        create_dir(self.summary_dir)
+        create_dir(self.checkpoint_dir)
+        create_dir(self.sample_dir)
 
         self.train_loader = train_loader
         self.test_loader = test_loader
@@ -65,24 +70,25 @@ class Trainer:
                 loss = self.loss(recon_batch, data, mu, logvar)
                 loss.backward()
                 self.optimizer.step()
-                loss_list.append(loss.data[0].item())
+                loss_list.append(loss.item())
 
-            print(loss_list)
-            print("epoch {}: - training loss: {}".format(epoch, np.mean(loss_list)))
+            epoch_avg_loss = np.mean(loss_list)/self.opts.batch_size
+            print("epoch {}: - training loss: {}".format(epoch, epoch_avg_loss))
             new_lr = self.adjust_learning_rate(epoch)
             print('learning rate:', new_lr)
 
             if epoch % opts.test_every == 0:
                 new_loss = self.test(epoch)
-                if new_loss < last_loss:
-                    self.save_checkpoint({
-                        'epoch': epoch + 1,
-                        'state_dict': self.model.state_dict(),
-                        'optimizer': self.optimizer.state_dict(),
-                    })
-                    print("Saved new checkpoint!", epoch)
+                if epoch % opts.checkpoint_every == 0:
+                    if new_loss < last_loss:
+                        self.save_checkpoint({
+                            'epoch': epoch + 1,
+                            'state_dict': self.model.state_dict(),
+                            'optimizer': self.optimizer.state_dict(),
+                        }, filename=self.opts.new_chkpt_fname)
+                        print("Saved new checkpoint!", epoch)
                 last_loss = new_loss
-                self.summary_writer.add_scalar('training/loss', np.mean(loss_list), epoch)
+                self.summary_writer.add_scalar('training/loss', epoch_avg_loss, epoch)
                 self.summary_writer.add_scalar('training/learning_rate', new_lr, epoch)
                 # self.save_checkpoint({
                 #     'epoch': epoch + 1,
@@ -91,6 +97,7 @@ class Trainer:
                 # })
                 # self.print_image("training/epoch"+str(epoch))
                 self.save_samples(epoch)
+
 
     def test(self, cur_epoch):
         print('testing...')
@@ -103,9 +110,9 @@ class Trainer:
                 data = data.cuda()
             data = Variable(data)
             recon_batch, mu, logvar = self.model.forward1(data)
-            test_loss += self.loss(recon_batch, data, mu, logvar).data[0]
-            mse_loss += self.loss.mse(recon_batch, data).data[0]
-            kld_loss += self.loss.kld(mu, logvar).data[0]
+            test_loss += self.loss(recon_batch, data, mu, logvar).item()
+            mse_loss += self.loss.mse(recon_batch, data).item()
+            kld_loss += self.loss.kld(mu, logvar).item()
 
         test_loss /= len(self.test_loader.dataset)
         mse_loss /= len(self.test_loader.dataset)

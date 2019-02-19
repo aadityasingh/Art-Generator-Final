@@ -34,12 +34,13 @@ def make_model(opts):
 
 def train(model, train_loader, test_loader, opts):
 	optimizer = optim.Adam(model.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
-	loss = Loss()
+	loss = Loss(opts)
 
 	if opts.load_from_chkpt != None:
-		checkpoint = torch.load('/'.join([os.path.dirname(__file__),opts.run,'checkpoint.pth.tar']))
+		checkpoint = torch.load('/'.join([opts.base_path,'run',opts.run,'checkpoints',opts.load_from_chkpt]))
 		model.load_state_dict(checkpoint['state_dict'])
 		opts.start_epoch = checkpoint['epoch']
+		print("Start epoch", opts.start_epoch)
 		optimizer.load_state_dict(checkpoint['optimizer'])
 
 	trainer = Trainer(model, optimizer, loss, train_loader, test_loader, opts)
@@ -71,9 +72,11 @@ def gen_image(checkpoint_file):
 def create_parser():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--epochs', dest='epochs', type=int, default = 10000)
-	parser.add_argument('--test_every', dest='test_every', type = int, default = 50)
+	parser.add_argument('--test_every', dest='test_every', type = int, default = 2)
+	parser.add_argument('--checkpoint_every', dest='checkpoint_every', type = int, default = 4)
 	parser.add_argument('--load_from_chkpt', dest='load_from_chkpt', default=None)
-	parser.add_argument('--lr', dest='lr', type=float, default=0.01)
+	parser.add_argument('--new_chkpt_fname', dest='new_chkpt_fname', default="checkpoint.pth.tar")
+	parser.add_argument('--lr', dest='lr', type=float, default=0.001)
 	parser.add_argument('--lr_decay', dest='lr_decay', type=float, default=0.995)
 	parser.add_argument('--lr_step', dest='lr_step', type=int, default=1)
 	parser.add_argument('--weight_decay', dest='weight_decay', type=float, default=0.3)
@@ -81,13 +84,13 @@ def create_parser():
 	parser.add_argument('--image_size', type=int, default=128)
 	parser.add_argument('--batch_size', type=int, default=16)
 	parser.add_argument('--start_epoch', type=int, default=0)
-	parser.add_argument('--base_path', default='.')
+	parser.add_argument('--base_path', default='/dfcvaegan')
 
 	parser.add_argument('--num_workers', type=int, default=1)
 	parser.add_argument('--movements', dest='movements', nargs='*', default=ALL_MOVEMENTS)
-	parser.add_argument('--data_path', default='/'.join(['.','data','wikiart']))
-	parser.add_argument('--balance_classes', type=bool, default=True)
-	parser.add_argument('--random_crop', type=bool, default=False)
+	parser.add_argument('--data_path', default='/'.join(['', 'dfcvaegan','data','wikiart']))
+	parser.add_argument('--balance_classes', type=int, default=1)
+	parser.add_argument('--random_crop', type=int, default=0)
 	return parser
 
 
