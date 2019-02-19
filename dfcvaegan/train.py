@@ -34,9 +34,9 @@ class Trainer:
     def __init__(self, model, optimizer, loss, train_loader, test_loader, opts):
         self.model = model
         self.opts = opts
-        self.summary_dir = '/'.join([opts.base_path, opts.run, 'logs'])
-        self.checkpoint_dir = '/'.join([opts.base_path, opts.run, 'checkpoints'])
-        self.sample_dir = '/'.join([opts.base_path, opts.run, 'samples'])
+        self.summary_dir = '/'.join([opts.base_path, 'runs', opts.run, 'logs'])
+        self.checkpoint_dir = '/'.join([opts.base_path, 'runs', opts.run, 'checkpoints'])
+        self.sample_dir = '/'.join([opts.base_path, 'runs', opts.run, 'samples'])
         create_dir(self.summary_dir)
         create_dir(self.checkpoint_dir)
         create_dir(self.sample_dir)

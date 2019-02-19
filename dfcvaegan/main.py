@@ -37,7 +37,7 @@ def train(model, train_loader, test_loader, opts):
 	loss = Loss(opts)
 
 	if opts.load_from_chkpt != None:
-		checkpoint = torch.load('/'.join([opts.base_path,opts.run,'checkpoints',opts.load_from_chkpt]))
+		checkpoint = torch.load('/'.join([opts.base_path,'run',opts.run,'checkpoints',opts.load_from_chkpt]))
 		model.load_state_dict(checkpoint['state_dict'])
 		opts.start_epoch = checkpoint['epoch']
 		print("Start epoch", opts.start_epoch)
