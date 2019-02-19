@@ -40,7 +40,7 @@ def train(model, train_loader, test_loader, opts):
 		checkpoint = torch.load('/'.join([opts.base_path,opts.run,opts.load_from_chkpt]))
 		model.load_state_dict(checkpoint['state_dict'])
 		opts.start_epoch = checkpoint['epoch']
-		print(opts.start_epoch)
+		print("Start epoch", opts.start_epoch)
 		optimizer.load_state_dict(checkpoint['optimizer'])
 
 	trainer = Trainer(model, optimizer, loss, train_loader, test_loader, opts)
