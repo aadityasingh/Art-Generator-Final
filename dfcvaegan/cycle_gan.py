@@ -202,11 +202,11 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
 
         d_optimizer.zero_grad()
 
-        fake_X, _, _ = G_YtoX(images_Y)
+        fake_X = G_YtoX(images_Y)
 
         D_X_loss = ((D_X(fake_X))**2).sum()/len(fake_X)
 
-        fake_Y, _, _ = G_XtoY(images_X)
+        fake_Y = G_XtoY(images_X)
 
         D_Y_loss = ((D_Y(fake_Y))**2).sum()/len(fake_Y)
 
