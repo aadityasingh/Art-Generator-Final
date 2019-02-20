@@ -98,22 +98,22 @@ def create_parser():
 	#for vaegan discrim
 	parser.add_argument('--discrim', type=bool, default = False)
 	# Model hyper-parameters
-    parser.add_argument('--g_conv_dim', type=int, default=64)
-    parser.add_argument('--d_conv_dim', type=int, default=64)
-    parser.add_argument('--use_cycle_consistency_loss', action='store_true', default=False, help='Choose whether to include the cycle consistency term in the loss.')
-    parser.add_argument('--init_zero_weights', action='store_true', default=False, help='Choose whether to initialize the generator conv weights to 0 (implements the identity function).')
+	parser.add_argument('--g_conv_dim', type=int, default=64)
+	parser.add_argument('--d_conv_dim', type=int, default=64)
+	parser.add_argument('--use_cycle_consistency_loss', action='store_true', default=False, help='Choose whether to include the cycle consistency term in the loss.')
+	parser.add_argument('--init_zero_weights', action='store_true', default=False, help='Choose whether to initialize the generator conv weights to 0 (implements the identity function).')
 
-    # Training hyper-parameters
-    parser.add_argument('--train_iters', type=int, default=2000, help='The number of training iterations to run (you can Ctrl-C out earlier if you want).')
-    parser.add_argument('--beta1', type=float, default=0.5)
-    parser.add_argument('--beta2', type=float, default=0.999)
+	# Training hyper-parameters
+	parser.add_argument('--train_iters', type=int, default=2000, help='The number of training iterations to run (you can Ctrl-C out earlier if you want).')
+	parser.add_argument('--beta1', type=float, default=0.5)
+	parser.add_argument('--beta2', type=float, default=0.999)
 
-    # Saving directories and checkpoint/sample iterations
-    parser.add_argument('--checkpoint_dir', type=str, default='checkpoints_cyclegan')
-    parser.add_argument('--sample_dir', type=str, default='samples_cyclegan')
-    parser.add_argument('--load', type=str, default=None)
-    parser.add_argument('--log_step', type=int , default=10)
-    parser.add_argument('--sample_every', type=int , default=100)
+	# Saving directories and checkpoint/sample iterations
+	parser.add_argument('--checkpoint_dir', type=str, default='checkpoints_cyclegan')
+	parser.add_argument('--sample_dir', type=str, default='samples_cyclegan')
+	parser.add_argument('--load', type=str, default=None)
+	parser.add_argument('--log_step', type=int , default=10)
+	parser.add_argument('--sample_every', type=int , default=100)
 
 
 
