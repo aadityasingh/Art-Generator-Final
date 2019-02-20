@@ -6,6 +6,7 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import cycle_gan
 from torch.autograd import Variable
 
 import os
@@ -14,6 +15,7 @@ from model import VAE
 from data_loader import load_data
 from train import Trainer
 from loss import Loss
+
 
 ALL_MOVEMENTS = ['Early_Renaissance', 'Analytical_Cubism', 'Mannerism_Late_Renaissance', 
 					'Expressionism', 'Contemporary_Realism', 'Fauvism', 'Northern_Renaissance', 
@@ -91,6 +93,31 @@ def create_parser():
 	parser.add_argument('--data_path', default='/'.join(['', 'dfcvaegan','data','wikiart']))
 	parser.add_argument('--balance_classes', type=int, default=1)
 	parser.add_argument('--random_crop', type=int, default=0)
+
+
+	#for vaegan discrim
+	parser.add_argument('--discrim', type=bool, default = False)
+	# Model hyper-parameters
+    parser.add_argument('--g_conv_dim', type=int, default=64)
+    parser.add_argument('--d_conv_dim', type=int, default=64)
+    parser.add_argument('--use_cycle_consistency_loss', action='store_true', default=False, help='Choose whether to include the cycle consistency term in the loss.')
+    parser.add_argument('--init_zero_weights', action='store_true', default=False, help='Choose whether to initialize the generator conv weights to 0 (implements the identity function).')
+
+    # Training hyper-parameters
+    parser.add_argument('--train_iters', type=int, default=2000, help='The number of training iterations to run (you can Ctrl-C out earlier if you want).')
+    parser.add_argument('--beta1', type=float, default=0.5)
+    parser.add_argument('--beta2', type=float, default=0.999)
+
+    # Saving directories and checkpoint/sample iterations
+    parser.add_argument('--checkpoint_dir', type=str, default='checkpoints_cyclegan')
+    parser.add_argument('--sample_dir', type=str, default='samples_cyclegan')
+    parser.add_argument('--load', type=str, default=None)
+    parser.add_argument('--log_step', type=int , default=10)
+    parser.add_argument('--sample_every', type=int , default=100)
+
+
+
+
 	return parser
 
 
@@ -99,15 +126,20 @@ if __name__ == "__main__":
 	opts = parser.parse_args()
 	print(opts.data_path)
 	print("Using movements", opts.movements)
-	model, train_loader, test_loader = make_model(opts)
-	# counts = [0, 0]
-	# for i in range(2):
-	# 	for batch_idx, (data, labels) in enumerate(train_loader):
-	# 		print(labels)
-	# 		if batch_idx > 5:
-	# 			break
-	# 	print('bla')
-	# print(batch_idx)
-	# print(counts)
-	train(model, train_loader, test_loader, opts)
-	# gen_image('./runs/checkpoints/checkpoint2.pth.tar')
+	if opts.discrim:
+		train_loader, test_loader = load_data(opts)
+		cycle_gan.main(opts, train_loader, test_loader)
+
+	else:
+		model, train_loader, test_loader = make_model(opts)
+		# counts = [0, 0]
+		# for i in range(2):
+		# 	for batch_idx, (data, labels) in enumerate(train_loader):
+		# 		print(labels)
+		# 		if batch_idx > 5:
+		# 			break
+		# 	print('bla')
+		# print(batch_idx)
+		# print(counts)
+		train(model, train_loader, test_loader, opts)
+		# gen_image('./runs/checkpoints/checkpoint2.pth.tar')

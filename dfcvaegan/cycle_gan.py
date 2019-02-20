@@ -37,19 +37,10 @@ import scipy.misc
 
 # Local imports
 import utils
-from data_loader import load_data
 from models import CycleGenerator, DCDiscriminator
 
 
 SEED = 11
-ALL_MOVEMENTS = ['Early_Renaissance', 'Analytical_Cubism', 'Mannerism_Late_Renaissance', 
-                    'Expressionism', 'Contemporary_Realism', 'Fauvism', 'Northern_Renaissance', 
-                    'Rococo', 'Ukiyo_e', 'Pop_Art', 'High_Renaissance', 'Minimalism', 
-                    'Art_Nouveau_Modern', 'Action_painting', 'Color_Field_Painting', 
-                    'Symbolism', 'Realism', 'Romanticism', 'Cubism', 'Impressionism', 
-                    'New_Realism', 'Baroque', 'Post_Impressionism', 'Abstract_Expressionism', 
-                    'Pointillism', 'Synthetic_Cubism', 'Naive_Art_Primitivism']
-
 
 # Set the random seed manually for reproducibility.
 np.random.seed(SEED)
@@ -156,12 +147,6 @@ def save_samples(iteration, fixed_Y, fixed_X, G_YtoX, G_XtoY, opts):
     scipy.misc.imsave(path, merged)
     print('Saved {}'.format(path))
 
-
-def fixed_color_to_bw(imgs):
-    bw_images = []
-    for image in imgs:
-        new_image = None #changea 3 x 128 x 128 to 1 x 128 x 128
-        bw_images.append(new_image)
 
 def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader_Y, opts):
     """Runs the training loop.
@@ -277,12 +262,9 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
             checkpoint(iteration, G_XtoY, G_YtoX, D_X, D_Y, opts)
 
 
-def main(opts):
+def main(opts, dataloader_X, test_dataloader_X):
     """Loads the data, creates checkpoint and sample directories, and starts the training loop.
     """
-
-        
-    dataloader_X, test_dataloader_X = load_data(opts=opts)
 
     # Create checkpoint and sample directories
     utils.create_dir(opts.checkpoint_dir)
