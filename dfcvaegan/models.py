@@ -103,7 +103,7 @@ class CycleGenerator(nn.Module):
         out = F.relu(self.deconv3(out))       
         out = F.tanh(self.deconv2(out))        
         out = F.tanh(self.deconv1(out)) 
-        return out
+        return out, logvar, mu
 
 
 class DCDiscriminator(nn.Module):
