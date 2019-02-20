@@ -44,7 +44,7 @@ class ResnetBlock(nn.Module):
 
 
 class CycleGenerator(nn.Module):
-    def __init__(self, conv_dim=64, init_zero_weights=False):
+    def __init__(self, conv_dim=64, init_zero_weights=False,  latent_vector=800):
         super(CycleGenerator, self).__init__()
         # self.conv1 = conv(3, conv_dim, 4) 
         # self.conv2 = conv(conv_dim, conv_dim*2, 4)
@@ -61,8 +61,6 @@ class CycleGenerator(nn.Module):
         self.conv1 = conv(3, conv_dim, 4) 
         self.conv2 = conv(conv_dim, conv_dim*2, 4)
         self.conv3 = conv(conv_dim*2, conv_dim*4, 4)
-
-        latent_vector = 400
 
         self.mean = linear(conv_dim * 4 * 16 * 16, latent_vector)
         self.noise = linear(conv_dim * 4 * 16 * 16, latent_vector)
