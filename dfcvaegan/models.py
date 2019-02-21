@@ -124,4 +124,5 @@ class DCDiscriminator(nn.Module):
 
         out = self.conv4(out).squeeze()
         out = F.sigmoid(out)
+        print(out)
         return out

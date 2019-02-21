@@ -115,7 +115,7 @@ def merge_images(sources, targets, opts, k=10):
 def save_samples(iteration, fixed_Y, G_XtoY, opts):
     """Saves samples from both generators X->Y and Y->X.
     """
-    fake_Y = G_XtoY(fixeD_Y)
+    fake_Y = G_XtoY(fixed_Y)
 
     X, fake_Y = utils.to_data(fixed_Y), utils.to_data(fake_Y)
 
@@ -147,6 +147,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
     iter_X = iter(dataloader_X)
 
     test_iter_X = iter(test_dataloader_X)
+    cross_entropy = nn.CrossEntropyLoss()
 
     # Get some fixed data from domains X and Y for sampling. These are images that are held
     # constant throughout training, that allow us to inspect the model's performance.
@@ -163,7 +164,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         d_optimizer.zero_grad()
 
-        D_Y_loss = ((D_Y(images_X) - 1)**2).sum()/len(images_X)
+        D_Y_loss = cross_entropy(D_Y(images_X), 1)
 
         d_real_loss = D_Y_loss
         d_real_loss.backward()
@@ -174,7 +175,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         fake_Y, _, _ = G_XtoY(images_X)
 
-        D_Y_loss = ((D_Y(fake_Y))**2).sum()/len(fake_Y)
+        D_Y_loss = cross_entropy(D_Y(images_X), 0)
 
         d_fake_loss = D_Y_loss
         d_fake_loss.backward()
