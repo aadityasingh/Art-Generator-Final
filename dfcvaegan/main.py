@@ -11,7 +11,7 @@ from torch.autograd import Variable
 
 import os
 
-from model import VAE
+from model import VAE, DCDiscriminator
 from data_loader import load_data
 from train import Trainer
 from loss import Loss
@@ -28,14 +28,14 @@ ALL_MOVEMENTS = ['Early_Renaissance', 'Analytical_Cubism', 'Mannerism_Late_Renai
 
 def make_model(opts):
 	train_loader, test_loader = load_data(opts)
-	model = VAE()
+	model = VAE(conv_dim=opts.conv_dim, latent_vector=opts.latent_dim)
 	if torch.cuda.is_available():
 		model.cuda()
 		print('Using GPU')
 
 	return model, train_loader, test_loader
 
-def train(model, train_loader, test_loader, opts):
+def dfcvae_train(model, train_loader, test_loader, opts):
 	optimizer = optim.Adam(model.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
 	loss = Loss(opts)
 
@@ -50,7 +50,33 @@ def train(model, train_loader, test_loader, opts):
 
 	# print(trainer)
 
-	trainer.train(opts)
+	trainer.dfcvae_train(opts)
+
+def vaegan_train(model, train_loader, test_loader, opts):
+	optimizer = optim.Adam(model.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
+	loss = Loss(opts) # This will be ignored by the vaegan trainer
+
+	discriminator = DCDiscriminator(conv_dim=opts.d_conv_dim)
+	d_optimizer = optim.Adam(discriminator.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
+
+	if opts.load_from_chkpt != None:
+		checkpoint = torch.load('/'.join([opts.base_path,'run',opts.run,'checkpoints',opts.load_from_chkpt]))
+		model.load_state_dict(checkpoint['state_dict'])
+		opts.start_epoch = checkpoint['epoch']
+		print("Start epoch", opts.start_epoch)
+		optimizer.load_state_dict(checkpoint['optimizer'])
+
+		d_checkpoint = torch.load('/'.join([opts.base_path,'run',opts.run,'checkpoints','discrim_'+opts.load_from_chkpt]))
+		discriminator.load_state_dict(checkpoint['state_dict'])
+		opts.start_epoch = checkpoint['epoch']
+		print("Start epoch", opts.start_epoch) # Should be the same as above
+		d_optimizer.load_state_dict(checkpoint['optimizer'])
+
+	trainer = Trainer(model, optimizer, loss, train_loader, test_loader, opts)
+
+	# print(trainer)
+
+	trainer.vaegan_train(discriminator, d_optimizer, opts)
 
 def eval(model, test_loader, opts):
 	checkpoint = torch.load('/'.join([opts.base_path,'runs',opts.run,'checkpoints',opts.load_from_chkpt]), map_location='cpu')
@@ -101,11 +127,12 @@ def create_parser():
 	parser.add_argument('--load_from_chkpt', dest='load_from_chkpt', default=None) # Also used for eval
 	parser.add_argument('--new_chkpt_fname', dest='new_chkpt_fname', default="checkpoint.pth.tar")
 	parser.add_argument('--lr', dest='lr', type=float, default=0.001)
-	parser.add_argument('--lr_decay', dest='lr_decay', type=float, default=0.995)
+	parser.add_argument('--lr_decay', dest='lr_decay', type=float, default=0.99)
 	parser.add_argument('--lr_step', dest='lr_step', type=int, default=1)
 	parser.add_argument('--weight_decay', dest='weight_decay', type=float, default=0.3)
 	parser.add_argument('--run', default='run')
 	parser.add_argument('--image_size', type=int, default=128)
+	parser.add_argument('--conv_dim', type=int, default=64)
 	parser.add_argument('--latent_dim', type=int, default=800)
 	parser.add_argument('--batch_size', type=int, default=16)
 	parser.add_argument('--start_epoch', type=int, default=0)
@@ -117,30 +144,29 @@ def create_parser():
 	parser.add_argument('--balance_classes', type=int, default=1)
 	parser.add_argument('--random_crop', type=int, default=0)
 
+	parser.add_argument('--dfc', default='discrim', help='Pick from discrim, encoder')
+	parser.add_argument('--dfc_path', default='D_Xfull.pkl', help='Path beyond base_path to get to pkl or checkpoint file... example: runs/fiveClassTrueTrue/checkpoints/checkpoint.pth.tar')
+
 	# Evaluation arguments
 	parser.add_argument('--eval_type', dest='eval_type', default='all', help='Choose from randgen, cluster, transform, all')
 	parser.add_argument('--op_samples', dest='op_samples', type=int, default=400, help='Number of images to do eval_type on and plot')
 	parser.add_argument('--pca_components', dest='pca_components', type=int, default=6, help='Number of PCA components to show')
 
-	#for vaegan discrim
-	parser.add_argument('--discrim', type=bool, default = False)
-	# Model hyper-parameters
-	parser.add_argument('--g_conv_dim', type=int, default=64)
+	# For cycle gan
 	parser.add_argument('--d_conv_dim', type=int, default=64)
-	parser.add_argument('--use_cycle_consistency_loss', action='store_true', default=False, help='Choose whether to include the cycle consistency term in the loss.')
-	parser.add_argument('--init_zero_weights', action='store_true', default=False, help='Choose whether to initialize the generator conv weights to 0 (implements the identity function).')
+	parser.add_argument('--loss_weight', type=float, default=1, help='How much to weight cross entropy against the MSE in VAEGAN')
 
 	# Training hyper-parameters
-	parser.add_argument('--train_iters', type=int, default=2000, help='The number of training iterations to run (you can Ctrl-C out earlier if you want).')
-	parser.add_argument('--beta1', type=float, default=0.5)
-	parser.add_argument('--beta2', type=float, default=0.999)
+	# parser.add_argument('--train_iters', type=int, default=2000, help='The number of training iterations to run (you can Ctrl-C out earlier if you want).')
+	# parser.add_argument('--beta1', type=float, default=0.5)
+	# parser.add_argument('--beta2', type=float, default=0.999)
 
 	# Saving directories and checkpoint/sample iterations
-	parser.add_argument('--checkpoint_dir', type=str, default='checkpoints_cyclegan')
-	parser.add_argument('--sample_dir', type=str, default='samples_cyclegan')
-	parser.add_argument('--load', type=str, default=None)
-	parser.add_argument('--log_step', type=int , default=10)
-	parser.add_argument('--sample_every', type=int , default=100)
+	# parser.add_argument('--checkpoint_dir', type=str, default='checkpoints_cyclegan')
+	# parser.add_argument('--sample_dir', type=str, default='samples_cyclegan')
+	# parser.add_argument('--load', type=str, default=None)
+	# parser.add_argument('--log_step', type=int , default=10)
+	# parser.add_argument('--sample_every', type=int , default=100)
 
 
 
@@ -153,27 +179,25 @@ if __name__ == "__main__":
 	opts = parser.parse_args()
 	print(opts.data_path)
 	print("Using movements", opts.movements)
-	if opts.discrim:
-		train_loader, test_loader = load_data(opts)
-		cycle_gan.main(opts, train_loader, test_loader)
-
+	# counts = [0, 0]
+	# for i in range(2):
+	# 	for batch_idx, (data, labels) in enumerate(train_loader):
+	# 		print(labels)
+	# 		if batch_idx > 5:
+	# 			break
+	# 	print('bla')
+	# print(batch_idx)
+	# print(counts)
+	if opts.mode == 'train_dfcvae':
+		model, train_loader, test_loader = make_model(opts)
+		dfcvae_train(model, train_loader, test_loader, opts)
+	elif opts.mode == 'train_vaegan':
+		model, train_loader, test_loader = make_model(opts)
+		vaegan_train(model, train_loader, test_loader, opts)
+	elif opts.mode == 'eval':
+		opts.batch_size = opts.op_samples
+		model, _, test_loader = make_model(opts)
+		eval(model, test_loader, opts)
 	else:
-		# counts = [0, 0]
-		# for i in range(2):
-		# 	for batch_idx, (data, labels) in enumerate(train_loader):
-		# 		print(labels)
-		# 		if batch_idx > 5:
-		# 			break
-		# 	print('bla')
-		# print(batch_idx)
-		# print(counts)
-		if opts.mode == 'train_dfcvae':
-			model, train_loader, test_loader = make_model(opts)
-			train(model, train_loader, test_loader, opts)
-		elif opts.mode == 'eval':
-			opts.batch_size = opts.op_samples
-			model, _, test_loader = make_model(opts)
-			eval(model, test_loader, opts)
-		else:
-			raise NotImplementedError
-		# gen_image('./runs/checkpoints/checkpoint2.pth.tar')
+		raise NotImplementedError
+	# gen_image('./runs/checkpoints/checkpoint2.pth.tar')

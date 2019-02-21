@@ -51,10 +51,9 @@ class Trainer:
         self.summary_writer = SummaryWriter(log_dir=self.summary_dir)
         print("Using cuda?", next(model.parameters()).is_cuda)
 
-    def train(self, opts):
+    def dfcvae_train(self, opts):
         self.model.train()
         last_loss = 10000000
-        save_new_checkpoint = False
         for epoch in range(self.opts.start_epoch, self.opts.epochs):
             loss_list = []
             print("epoch {}...".format(epoch))
@@ -72,7 +71,7 @@ class Trainer:
 
             epoch_avg_loss = np.mean(loss_list)/self.opts.batch_size
             print("epoch {}: - training loss: {}".format(epoch, epoch_avg_loss))
-            new_lr = self.adjust_learning_rate(epoch)
+            new_lr = self.adjust_learning_rate(epoch, self.optimizer)
             print('learning rate:', new_lr)
 
             if epoch % opts.test_every == 0:
@@ -88,12 +87,79 @@ class Trainer:
                 last_loss = new_loss
                 self.summary_writer.add_scalar('training/loss', epoch_avg_loss, epoch)
                 self.summary_writer.add_scalar('training/learning_rate', new_lr, epoch)
-                # self.save_checkpoint({
-                #     'epoch': epoch + 1,
-                #     'state_dict': self.model.state_dict(),
-                #     'optimizer': self.optimizer.state_dict(),
-                # })
-                # self.print_image("training/epoch"+str(epoch))
+                self.save_samples(epoch)
+
+    def vaegan_train(self, discriminator, d_optimizer, opts):
+        self.model.train()
+        discriminator.train()
+        self.mse_loss = nn.MSELoss(size_average=False)
+        last_loss = 10000000
+        for epoch in range(self.opts.start_epoch, self.opts.epochs):
+            loss_list = []
+            d_fake_loss_list = []
+            d_real_loss_list = []
+            print("epoch {}...".format(epoch))
+            for batch_idx, (data, _) in enumerate(tqdm(self.train_loader)):
+                if torch.cuda.is_available():
+#                    print('using GPU')
+                    data = data.cuda()
+                data = Variable(data)
+                recon_batch, mu, logvar = self.model.forward1(data)
+
+                d_optimizer.zero_grad()
+                d_loss = -math.log(discriminator(data))
+                d_real_loss = torch.tensor([d_loss], requires_grad = True).cuda()
+                d_real_loss.backward()
+                d_optimizer.step()
+
+                d_optimizer.zero_grad()
+                d_loss = -math.log(1 - discriminator(recon_batch))
+                d_fake_loss = torch.tensor([d_loss], requires_grad = True).cuda()
+                d_fake_loss.backward()
+                d_optimizer.step()
+
+                self.optimizer.zero_grad()
+                vae_loss = self.mse_loss(recon_x, x) - (0.5 * torch.sum(1 + logvar_Y - mu_Y.pow(2) - logvar_Y.exp()))
+                g_loss = vae_loss
+                g_loss += -math.log(discriminator(recon_batch))*opts.loss_weight
+                g_loss.backward()
+                self.optimizer.step()
+
+                d_real_loss_list.append(d_real_loss.item())
+                d_fake_loss_list.append(d_fake_loss.item())
+                loss_list.append(vae_loss.item())
+
+            epoch_avg_loss = np.mean(loss_list)/self.opts.batch_size
+            d_real_avg_loss = np.mean(d_real_loss_list)/self.opts.batch_size
+            d_fake_avg_loss = np.mean(d_fake_loss_list)/self.opts.batch_size
+            print("epoch {}: - training loss: {}".format(epoch, epoch_avg_loss))
+            print("epoch {}: - d_fake loss: {}".format(epoch, d_fake_avg_loss))
+            print("epoch {}: - d_real loss: {}".format(epoch, d_real_avg_loss))
+            new_lr = self.adjust_learning_rate(epoch, self.optimizer)
+            new_lr = self.adjust_learning_rate(epoch, d_optimizer)
+            print('learning rate:', new_lr)
+
+            if epoch % opts.test_every == 0:
+                new_loss = self.test(epoch)
+                if epoch % opts.checkpoint_every == 0:
+                    # if new_loss < last_loss:
+                    self.save_checkpoint({
+                        'epoch': epoch + 1,
+                        'state_dict': self.model.state_dict(),
+                        'optimizer': self.optimizer.state_dict(),
+                    }, filename=self.opts.new_chkpt_fname)
+                    print("Saved new checkpoint!", epoch)
+                    self.save_checkpoint({
+                            'epoch': epoch + 1,
+                            'state_dict': discriminator.state_dict(),
+                            'optimizer': d_optimizer.state_dict(),
+                        }, filename='discrim_'+self.opts.new_chkpt_fname)
+                    # print("Saved new checkpoint!", epoch)
+                last_loss = new_loss
+                self.summary_writer.add_scalar('training/loss', epoch_avg_loss, epoch)
+                self.summary_writer.add_scalar('training/d_fake_loss', d_fake_avg_loss, epoch)
+                self.summary_writer.add_scalar('training/d_real_loss', d_real_avg_loss, epoch)
+                self.summary_writer.add_scalar('training/learning_rate', new_lr, epoch)
                 self.save_samples(epoch)
 
 
@@ -157,10 +223,10 @@ class Trainer:
         scipy.misc.imsave(path, merged)
         print('Saved {}'.format(path))
 
-    def adjust_learning_rate(self, epoch):
+    def adjust_learning_rate(self, epoch, optim):
         """Sets the learning rate to the initial LR multiplied by 0.98 every epoch"""
         learning_rate = self.opts.lr * (self.opts.lr_decay ** (epoch//self.opts.lr_step))
-        for param_group in self.optimizer.param_groups:
+        for param_group in optim.param_groups:
             param_group['lr'] = learning_rate
         return learning_rate
 

@@ -6,14 +6,20 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import os
 
-from model import DCDiscriminator
+from model import VAE, OldDiscriminator
 
 class Loss(nn.Module):
     def __init__(self, opts):
         super(Loss, self).__init__()
         self.mse_loss = nn.MSELoss(size_average=False)
-        self.DFCNet = DCDiscriminator(conv_dim=64)
-        self.DFCNet.load_state_dict(torch.load('/'.join([opts.base_path, 'D_Xfull.pkl']), map_location=lambda storage, loc: storage))
+        if opts.dfc == 'discrim':
+            self.DFCNet = OldDiscriminator(conv_dim=opts.d_conv_dim)
+            self.DFCNet.load_state_dict(torch.load('/'.join([opts.base_path, opts.dfc_path]), map_location=lambda storage, loc: storage))
+        elif opts.dfc == 'encoder':
+            self.DFCNet = VAE(conv_dim=opts.conv_dim, latent_vector=opts.latent_dim)
+            self.DFCNet.load_state_dict( torch.load('/'.join([opts.base_path, opts.dfc_path]))['state_dict'] )
+        else:
+            raise NotImplementedError
         if torch.cuda.is_available():
         	self.DFCNet.cuda()
         for param in self.DFCNet.parameters():
