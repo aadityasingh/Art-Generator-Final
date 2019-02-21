@@ -164,7 +164,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         d_optimizer.zero_grad()
 
-        D_Y_loss = cross_entropy(D_Y(images_X)[0], 1)
+        D_Y_loss = cross_entropy(D_Y(images_X).data[0], 1)
 
         d_real_loss = D_Y_loss
         d_real_loss.backward()
@@ -175,7 +175,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         fake_Y, _, _ = G_XtoY(images_X)
 
-        D_Y_loss = cross_entropy(D_Y(images_X)[0], 0)
+        D_Y_loss = cross_entropy(D_Y(images_X).data[0], 0)
 
         d_fake_loss = D_Y_loss
         d_fake_loss.backward()
