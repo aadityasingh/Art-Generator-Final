@@ -124,6 +124,6 @@ class DCDiscriminator(nn.Module):
         out = F.relu(self.conv2(out))  # BS x 128 x 8 x 8
         out = F.relu(self.conv3(out))  # BS x 256 x 4 x 4
 
-        out = self.conv4(out).squeeze()
+        out = self.conv4(out)
         out = F.sigmoid(out)
         return out
