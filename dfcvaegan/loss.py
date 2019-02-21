@@ -13,9 +13,11 @@ class Loss(nn.Module):
         super(Loss, self).__init__()
         self.mse_loss = nn.MSELoss(size_average=False)
         if opts.dfc == 'discrim':
+            print("Using old GAN discrim as DFCNet")
             self.DFCNet = OldDiscriminator(conv_dim=opts.d_conv_dim)
             self.DFCNet.load_state_dict(torch.load('/'.join([opts.base_path, opts.dfc_path]), map_location=lambda storage, loc: storage))
         elif opts.dfc == 'encoder':
+            print("Using old VAE encoder for DFCNet")
             self.DFCNet = VAE(conv_dim=opts.conv_dim, latent_vector=opts.latent_dim)
             self.DFCNet.load_state_dict( torch.load('/'.join([opts.base_path, opts.dfc_path]))['state_dict'] )
         else:

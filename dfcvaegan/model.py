@@ -63,6 +63,7 @@ class VAE(nn.Module):
         self.conv3 = conv(conv_dim*2, conv_dim*4, 4)
 
         # latent_vector = 800
+        print("Using latent dim", latent_vector)
 
         self.mean = linear(conv_dim * 4 * 16 * 16, latent_vector)
         self.noise = linear(conv_dim * 4 * 16 * 16, latent_vector)
