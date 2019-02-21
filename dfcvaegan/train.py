@@ -124,7 +124,7 @@ class Trainer:
                 d_optimizer.step()
 
                 self.optimizer.zero_grad()
-                vae_loss = self.mse_loss(recon_x, x) - (0.5 * torch.sum(1 + logvar_Y - mu_Y.pow(2) - logvar_Y.exp()))
+                vae_loss = self.mse_loss(recon_batch, data) - (0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))
                 g_loss = vae_loss
                 g_loss += -torch.log(discriminator(recon_batch))*opts.loss_weight
                 g_loss.backward()
