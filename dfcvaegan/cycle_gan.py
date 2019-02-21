@@ -117,7 +117,7 @@ def save_samples(iteration, fixed_Y, G_XtoY, opts):
     """
     fake_Y = G_XtoY(fixeD_Y)
 
-    X, fake_Y = utils.to_data(fixeD_Y), utils.to_data(fake_Y)
+    X, fake_Y = utils.to_data(fixed_Y), utils.to_data(fake_Y)
 
     merged = merge_images(X, fake_Y, opts)
     path = os.path.join(opts.sample_dir, 'sample-{:06d}-X-Y.png'.format(iteration))
@@ -185,7 +185,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         fake_Y, logvar_Y, mu_Y = G_XtoY(images_X)
 
-        g_loss = ((D_Y(fake_Y) - 1)**2).sum()/len(fake_Y) #MSE
+        g_loss = ((fake_Y - images_X)**2).sum() #MSE
         g_loss += -0.5 * torch.sum(1 + logvar_Y - mu_Y.pow(2) - logvar_Y.exp())
 
         
