@@ -79,11 +79,11 @@ def load_data(opts):
 
     if opts.balance_classes:
         print("Using WeightedRandomSampler")
-        train_dloader = DataLoader(dataset=train_dataset, batch_size=opts.batch_size, sampler=train_sampler, num_workers=opts.num_workers)
-        test_dloader = DataLoader(dataset=test_dataset, batch_size=opts.batch_size, sampler=test_sampler, num_workers=opts.num_workers)
+        train_dloader = DataLoader(dataset=train_dataset, batch_size=min(opts.batch_size, len(train_dataset)), sampler=train_sampler, num_workers=opts.num_workers)
+        test_dloader = DataLoader(dataset=test_dataset, batch_size=min(opts.batch_size, len(test_dataset)), sampler=test_sampler, num_workers=opts.num_workers)
     else:
         print("Not weighting classes")
-        train_dloader = DataLoader(dataset=train_dataset, batch_size=opts.batch_size, shuffle=True, num_workers=opts.num_workers)
-        test_dloader = DataLoader(dataset=test_dataset, batch_size=opts.batch_size, shuffle=True, num_workers=opts.num_workers)
+        train_dloader = DataLoader(dataset=train_dataset, batch_size=min(opts.batch_size, len(train_dataset)), shuffle=True, num_workers=opts.num_workers)
+        test_dloader = DataLoader(dataset=test_dataset, batch_size=min(opts.batch_size, len(test_dataset)), shuffle=True, num_workers=opts.num_workers)
 
     return train_dloader, test_dloader
