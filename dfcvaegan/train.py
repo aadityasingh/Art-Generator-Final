@@ -25,8 +25,6 @@ import numpy as np
 import scipy
 import scipy.misc
 
-from utils import create_dir
-
 
 # torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
@@ -37,9 +35,9 @@ class Trainer:
         self.summary_dir = '/'.join([opts.base_path, 'runs', opts.run, 'logs'])
         self.checkpoint_dir = '/'.join([opts.base_path, 'runs', opts.run, 'checkpoints'])
         self.sample_dir = '/'.join([opts.base_path, 'runs', opts.run, 'samples'])
-        create_dir(self.summary_dir)
-        create_dir(self.checkpoint_dir)
-        create_dir(self.sample_dir)
+        utils.create_dir(self.summary_dir)
+        utils.create_dir(self.checkpoint_dir)
+        utils.create_dir(self.sample_dir)
 
         self.train_loader = train_loader
         self.test_loader = test_loader

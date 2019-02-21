@@ -37,6 +37,7 @@ class ArtDataset(Dataset):
         self.samples = []
         self.class_counts = [0]*len(opts.movements)
         for i, movement in enumerate(opts.movements):
+            print(i, movement)
             for fname in os.listdir('/'.join([root, movement])):
                 if fname[-4:] in ['.jpg', '.png']:
                     self.samples.append(('/'.join([root, movement, fname]), i))

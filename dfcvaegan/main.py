@@ -15,6 +15,7 @@ from model import VAE
 from data_loader import load_data
 from train import Trainer
 from loss import Loss
+from evaluate import Evaluator
 
 
 ALL_MOVEMENTS = ['Early_Renaissance', 'Analytical_Cubism', 'Mannerism_Late_Renaissance', 
@@ -51,6 +52,25 @@ def train(model, train_loader, test_loader, opts):
 
 	trainer.train(opts)
 
+def eval(model, test_loader, opts):
+	checkpoint = torch.load('/'.join([opts.base_path,'runs',opts.run,'checkpoints',opts.load_from_chkpt]), map_location='cpu')
+	model.load_state_dict(checkpoint['state_dict'])
+
+	evaluator = Evaluator(model, test_loader, opts)
+
+	if opts.eval_type == 'all':
+		evaluator.generate()
+		evaluator.cluster()
+		evaluator.interpolate()
+	elif opts.eval_type == 'randgen':
+		evaluator.generate()
+	elif opts.eval_type == 'cluster':
+		evaluator.cluster()
+	elif opts.eval_type == 'transform':
+		evaluator.interpolate()
+	else:
+		raise NotImplementedError
+
 # CAUTION: Note that vae_params must be the same as the checkpoint... perhaps we can save this with the checkpoint for future
 def gen_image(checkpoint_file):
 	checkpoint = torch.load(checkpoint_file)
@@ -73,10 +93,12 @@ def gen_image(checkpoint_file):
 	
 def create_parser():
 	parser = argparse.ArgumentParser()
+	parser.add_argument('--mode', dest='mode', default='train_dfcvae', help='Choose from train_dfcvae, train_vaegan, train_cnn, eval')
+
 	parser.add_argument('--epochs', dest='epochs', type=int, default = 10000)
 	parser.add_argument('--test_every', dest='test_every', type = int, default = 2)
 	parser.add_argument('--checkpoint_every', dest='checkpoint_every', type = int, default = 4)
-	parser.add_argument('--load_from_chkpt', dest='load_from_chkpt', default=None)
+	parser.add_argument('--load_from_chkpt', dest='load_from_chkpt', default=None) # Also used for eval
 	parser.add_argument('--new_chkpt_fname', dest='new_chkpt_fname', default="checkpoint.pth.tar")
 	parser.add_argument('--lr', dest='lr', type=float, default=0.001)
 	parser.add_argument('--lr_decay', dest='lr_decay', type=float, default=0.995)
@@ -84,16 +106,21 @@ def create_parser():
 	parser.add_argument('--weight_decay', dest='weight_decay', type=float, default=0.3)
 	parser.add_argument('--run', default='run')
 	parser.add_argument('--image_size', type=int, default=128)
+	parser.add_argument('--latent_dim', type=int, default=800)
 	parser.add_argument('--batch_size', type=int, default=16)
 	parser.add_argument('--start_epoch', type=int, default=0)
 	parser.add_argument('--base_path', default='/dfcvaegan')
 
 	parser.add_argument('--num_workers', type=int, default=1)
-	parser.add_argument('--movements', dest='movements', nargs='*', default=ALL_MOVEMENTS)
+	parser.add_argument('--movements', dest='movements', nargs='*', default=ALL_MOVEMENTS) # Note if in eval mode, these are the movements to eval on (can be subset of trained movements)
 	parser.add_argument('--data_path', default='/'.join(['', 'dfcvaegan','data','wikiart']))
 	parser.add_argument('--balance_classes', type=int, default=1)
 	parser.add_argument('--random_crop', type=int, default=0)
 
+	# Evaluation arguments
+	parser.add_argument('--eval_type', dest='eval_type', default='all', help='Choose from randgen, cluster, transform, all')
+	parser.add_argument('--op_samples', dest='op_samples', type=int, default=400, help='Number of images to do eval_type on and plot')
+	parser.add_argument('--pca_components', dest='pca_components', type=int, default=6, help='Number of PCA components to show')
 
 	#for vaegan discrim
 	parser.add_argument('--discrim', type=bool, default = False)
@@ -131,7 +158,6 @@ if __name__ == "__main__":
 		cycle_gan.main(opts, train_loader, test_loader)
 
 	else:
-		model, train_loader, test_loader = make_model(opts)
 		# counts = [0, 0]
 		# for i in range(2):
 		# 	for batch_idx, (data, labels) in enumerate(train_loader):
@@ -141,5 +167,13 @@ if __name__ == "__main__":
 		# 	print('bla')
 		# print(batch_idx)
 		# print(counts)
-		train(model, train_loader, test_loader, opts)
+		if opts.mode == 'train_dfcvae':
+			model, train_loader, test_loader = make_model(opts)
+			train(model, train_loader, test_loader, opts)
+		elif opts.mode == 'eval':
+			opts.batch_size = opts.op_samples
+			model, _, test_loader = make_model(opts)
+			eval(model, test_loader, opts)
+		else:
+			raise NotImplementedError
 		# gen_image('./runs/checkpoints/checkpoint2.pth.tar')
