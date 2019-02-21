@@ -188,7 +188,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         g_loss = ((fake_Y - images_X)**2).sum() #MSE
         g_loss += -0.5 * torch.sum(1 + logvar_Y - mu_Y.pow(2) - logvar_Y.exp())
-        g_loss += -math.log(D_Y(fake(Y)))
+        g_loss += -math.log(D_Y(fake_Y))
 
         
 
