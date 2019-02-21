@@ -165,7 +165,7 @@ class DCDiscriminator(nn.Module):
 
 class OldDiscriminator(nn.Module):
     def __init__(self, conv_dim=64):
-        super(DCDiscriminator, self).__init__()
+        super(OldDiscriminator, self).__init__()
 
         self.conv1 = conv(in_channels=3, out_channels=conv_dim, kernel_size=4)
         self.conv2 = conv(in_channels=conv_dim, out_channels=conv_dim * 2, kernel_size=4)
