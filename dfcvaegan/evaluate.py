@@ -114,7 +114,7 @@ class Evaluator:
 		self.save_image(torch.from_numpy(noisy).float(), 'noisy_center_', movements=True)
 		print("Saved noisy center images")
 
-	def transform(self):
+	def interpolate(self):
 		pass
 
 	def merge_images(self, sources, k=10):
