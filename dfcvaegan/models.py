@@ -113,8 +113,7 @@ class DCDiscriminator(nn.Module):
         self.conv1 = conv(in_channels=3, out_channels=conv_dim, kernel_size=4)
         self.conv2 = conv(in_channels=conv_dim, out_channels=conv_dim * 2, kernel_size=4)
         self.conv3 = conv(in_channels=conv_dim * 2, out_channels=conv_dim * 4, kernel_size=4)
-        self.conv4 = conv(in_channels=conv_dim * 4, out_channels=conv_dim * 8, kernel_size=4, stride=1,
-                          batch_norm=False)
+        self.conv4 = conv(in_channels=conv_dim * 4, out_channels=conv_dim * 8, kernel_size=4)
         self.linear = linear(conv_dim * 8 * 8 * 8, 1)
 
     def forward(self, x):
