@@ -163,7 +163,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
         images_X, labels_X = utils.to_var(images_X), utils.to_var(labels_X).long().squeeze()
 
         d_optimizer.zero_grad()
-
+        print(D_Y(images_X), torch.tensor(1).cuda())
         D_Y_loss = cross_entropy(D_Y(images_X), torch.tensor(1).cuda())
 
         d_real_loss = D_Y_loss
