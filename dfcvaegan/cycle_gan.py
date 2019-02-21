@@ -175,9 +175,9 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         fake_Y, _, _ = G_XtoY(images_X)
 
-        D_Y_loss = -math.log(D_Y(images_X) - 1)
+        D_Y_loss = -math.log(1 - D_Y(images_X))
 
-        d_fake_loss = D_Y_loss
+        d_fake_loss = torch.tensor([D_Y_loss], requires_grad = True).cuda()
         d_fake_loss.backward()
         d_optimizer.step()
 
