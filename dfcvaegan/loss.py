@@ -22,7 +22,7 @@ class Loss(nn.Module):
             self.DFCNet.load_state_dict( torch.load('/'.join([opts.base_path, opts.dfc_path]))['state_dict'] )
         else:
             raise NotImplementedError
-        if torch.cuda.is_available():
+        if opts.cuda:
         	self.DFCNet.cuda()
         for param in self.DFCNet.parameters():
         	param.requires_grad = False

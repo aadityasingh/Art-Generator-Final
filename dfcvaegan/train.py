@@ -27,13 +27,11 @@ import numpy as np
 import scipy
 import scipy.misc
 
-
-# torch.set_default_tensor_type('torch.cuda.FloatTensor')
-
 class Trainer:
     def __init__(self, model, optimizer, loss, train_loader, test_loader, opts):
         self.model = model
         self.opts = opts
+        self.cuda = opts.cuda
         self.summary_dir = '/'.join([opts.base_path, 'runs', opts.run, 'logs'])
         self.checkpoint_dir = '/'.join([opts.base_path, 'runs', opts.run, 'checkpoints'])
         self.sample_dir = '/'.join([opts.base_path, 'runs', opts.run, 'samples'])
@@ -60,7 +58,7 @@ class Trainer:
             loss_list = []
             print("epoch {}...".format(epoch))
             for batch_idx, (data, _) in enumerate(tqdm(self.train_loader)):
-                if torch.cuda.is_available():
+                if self.cuda:
 #                    print('using GPU')
                     data = data.cuda()
                 data = Variable(data)
@@ -102,7 +100,7 @@ class Trainer:
             d_real_loss_list = []
             print("epoch {}...".format(epoch))
             for batch_idx, (data, _) in enumerate(tqdm(self.train_loader)):
-                if torch.cuda.is_available():
+                if self.cuda:
 #                    print('using GPU')
                     data = data.cuda()
                 data = Variable(data)
@@ -175,7 +173,7 @@ class Trainer:
         mse_loss = 0
         kld_loss = 0
         for i, (data, _) in enumerate(self.test_loader):
-            if torch.cuda.is_available():
+            if self.cuda:
                 data = data.cuda()
             data = Variable(data)
             recon_batch, mu, logvar = self.model.forward1(data)

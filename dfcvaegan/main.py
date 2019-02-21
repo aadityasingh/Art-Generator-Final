@@ -29,7 +29,7 @@ ALL_MOVEMENTS = ['Early_Renaissance', 'Analytical_Cubism', 'Mannerism_Late_Renai
 def make_model(opts):
 	train_loader, test_loader = load_data(opts)
 	model = VAE(conv_dim=opts.conv_dim, latent_vector=opts.latent_dim)
-	if torch.cuda.is_available():
+	if opts.cuda:
 		model.cuda()
 		print('Using GPU')
 
@@ -57,7 +57,7 @@ def vaegan_train(model, train_loader, test_loader, opts):
 	loss = Loss(opts) # This will be ignored by the vaegan trainer
 
 	discriminator = DCDiscriminator(conv_dim=opts.d_conv_dim)
-	if torch.cuda.is_available():
+	if opts.cuda:
 		discriminator.cuda()
 		print('Using GPU on discrim')
 	d_optimizer = optim.Adam(discriminator.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
@@ -123,6 +123,7 @@ def gen_image(checkpoint_file):
 def create_parser():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--mode', dest='mode', default='train_dfcvae', help='Choose from train_dfcvae, train_vaegan, train_cnn, eval')
+	parser.add_argument('--cuda', type=int, default=0)
 
 	parser.add_argument('--epochs', dest='epochs', type=int, default = 10000)
 	parser.add_argument('--test_every', dest='test_every', type = int, default = 2)
@@ -182,6 +183,7 @@ if __name__ == "__main__":
 	opts = parser.parse_args()
 	print(opts.data_path)
 	print("Using movements", opts.movements)
+	opts.cuda = 1 if torch.cuda.is_available() else 0
 	# counts = [0, 0]
 	# for i in range(2):
 	# 	for batch_idx, (data, labels) in enumerate(train_loader):
@@ -198,6 +200,7 @@ if __name__ == "__main__":
 		model, train_loader, test_loader = make_model(opts)
 		vaegan_train(model, train_loader, test_loader, opts)
 	elif opts.mode == 'eval':
+		opts.cuda = 0
 		opts.batch_size = opts.op_samples
 		model, _, test_loader = make_model(opts)
 		eval(model, test_loader, opts)
