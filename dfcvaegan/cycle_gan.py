@@ -164,7 +164,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
         images_X, labels_X = utils.to_var(images_X), utils.to_var(labels_X).long().squeeze()
 
         d_optimizer.zero_grad()
-        D_Y_loss = -math.log(D_Y(images_X).item())
+        D_Y_loss = -math.log(D_Y(images_X))
 
         d_real_loss = D_Y_loss
         d_real_loss.backward()
@@ -175,7 +175,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         fake_Y, _, _ = G_XtoY(images_X)
 
-        D_Y_loss = -math.log(D_Y(images_X).item() - 1)
+        D_Y_loss = -math.log(D_Y(images_X) - 1)
 
         d_fake_loss = D_Y_loss
         d_fake_loss.backward()
