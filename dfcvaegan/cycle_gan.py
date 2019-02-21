@@ -198,7 +198,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
         if iteration % opts.log_step == 0:
             print('Iteration [{:5d}/{:5d}] | d_real_loss: {:6.4f} | d_Y_loss: {:6.4f} | '
                   'd_fake_loss: {:6.4f} | g_loss: {:6.4f}'.format(
-                    iteration, opts.train_iters, d_real_loss.item(), D_Y_loss.item(), 
+                    iteration, opts.train_iters, d_real_loss.item(), D_Y_loss, 
                     d_fake_loss.item(), g_loss.item()))
 
 
