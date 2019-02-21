@@ -57,6 +57,9 @@ def vaegan_train(model, train_loader, test_loader, opts):
 	loss = Loss(opts) # This will be ignored by the vaegan trainer
 
 	discriminator = DCDiscriminator(conv_dim=opts.d_conv_dim)
+	if torch.cuda.is_available():
+		discriminator.cuda()
+		print('Using GPU on discrim')
 	d_optimizer = optim.Adam(discriminator.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
 
 	if opts.load_from_chkpt != None:
