@@ -120,7 +120,7 @@ class Trainer:
                 d_optimizer.zero_grad()
                 d_fake_loss = torch.sum(-torch.log(1 - discriminator(recon_batch)))
                 # d_fake_loss = torch.tensor(d_loss, requires_grad = True).cuda()
-                d_fake_loss.backward()
+                d_fake_loss.backward(retain_graph=True)
                 d_optimizer.step()
 
                 self.optimizer.zero_grad()
