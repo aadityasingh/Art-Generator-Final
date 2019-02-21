@@ -113,16 +113,16 @@ class DCDiscriminator(nn.Module):
         self.conv1 = conv(in_channels=3, out_channels=conv_dim, kernel_size=4)
         self.conv2 = conv(in_channels=conv_dim, out_channels=conv_dim * 2, kernel_size=4)
         self.conv3 = conv(in_channels=conv_dim * 2, out_channels=conv_dim * 4, kernel_size=4)
-        self.conv4 = conv(in_channels=conv_dim * 4, out_channels=1, kernel_size=4, stride=1,
+        self.conv4 = conv(in_channels=conv_dim * 4, out_channels=conv_dim * 8, kernel_size=4, stride=1,
                           batch_norm=False)
-        self.linear = linear(240 * 15, 1)
+        self.linear = linear(conv_dim * 8 * 8 * 8, 1)
 
     def forward(self, x):
 
         out = F.relu(self.conv1(x))    # BS x 64 x 16 x 16
         out = F.relu(self.conv2(out))  # BS x 128 x 8 x 8
         out = F.relu(self.conv3(out))  # BS x 256 x 4 x 4
-        out = F.relu(self.conv4(out)).view(-1, 3600)
+        out = F.relu(self.conv4(out)).view(-1, conv_dim * 8 * 8 * 8)
         out = self.linear(out)
         out = F.sigmoid(out)
         print(out)
