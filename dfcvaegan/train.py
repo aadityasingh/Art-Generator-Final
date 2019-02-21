@@ -15,6 +15,8 @@ import argparse
 import warnings
 warnings.filterwarnings("ignore")
 
+import math
+
 # Torch imports
 import torch
 import torch.nn as nn
@@ -107,13 +109,13 @@ class Trainer:
                 recon_batch, mu, logvar = self.model.forward1(data)
 
                 d_optimizer.zero_grad()
-                d_loss = -math.log(discriminator(data))
+                d_loss = -torch.log(discriminator(data)).cuda()
                 d_real_loss = torch.tensor([d_loss], requires_grad = True).cuda()
                 d_real_loss.backward()
                 d_optimizer.step()
 
                 d_optimizer.zero_grad()
-                d_loss = -math.log(1 - discriminator(recon_batch))
+                d_loss = -torch.log(1 - discriminator(recon_batch))
                 d_fake_loss = torch.tensor([d_loss], requires_grad = True).cuda()
                 d_fake_loss.backward()
                 d_optimizer.step()
@@ -121,7 +123,7 @@ class Trainer:
                 self.optimizer.zero_grad()
                 vae_loss = self.mse_loss(recon_x, x) - (0.5 * torch.sum(1 + logvar_Y - mu_Y.pow(2) - logvar_Y.exp()))
                 g_loss = vae_loss
-                g_loss += -math.log(discriminator(recon_batch))*opts.loss_weight
+                g_loss += -torch.log(discriminator(recon_batch))*opts.loss_weight
                 g_loss.backward()
                 self.optimizer.step()
 
