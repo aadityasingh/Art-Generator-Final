@@ -21,6 +21,7 @@ import os
 import pdb
 import pickle
 import argparse
+import math
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -163,8 +164,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
         images_X, labels_X = utils.to_var(images_X), utils.to_var(labels_X).long().squeeze()
 
         d_optimizer.zero_grad()
-        print(D_Y(images_X), torch.tensor(1).cuda())
-        D_Y_loss = cross_entropy(D_Y(images_X), torch.tensor(1).cuda())
+        D_Y_loss = -math.log(D_Y(images_X).data[0])
 
         d_real_loss = D_Y_loss
         d_real_loss.backward()
@@ -175,7 +175,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
 
         fake_Y, _, _ = G_XtoY(images_X)
 
-        D_Y_loss = cross_entropy(D_Y(images_X).data[0], 0)
+        D_Y_loss = -math.log(D_Y(images_X).data[0] - 1)
 
         d_fake_loss = D_Y_loss
         d_fake_loss.backward()
