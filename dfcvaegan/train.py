@@ -109,14 +109,14 @@ class Trainer:
                 recon_batch, mu, logvar = self.model.forward1(data)
 
                 d_optimizer.zero_grad()
-                d_loss = -torch.log(discriminator(data))
-                d_real_loss = torch.tensor([d_loss], requires_grad = True).cuda()
+                d_real_loss = -torch.log(discriminator(data))
+                # d_real_loss = torch.tensor([d_loss], requires_grad = True).cuda()
                 d_real_loss.backward()
                 d_optimizer.step()
 
                 d_optimizer.zero_grad()
-                d_loss = -torch.log(1 - discriminator(recon_batch))
-                d_fake_loss = torch.tensor([d_loss], requires_grad = True).cuda()
+                d_fake_loss = -torch.log(1 - discriminator(recon_batch))
+                # d_fake_loss = torch.tensor([d_loss], requires_grad = True).cuda()
                 d_fake_loss.backward()
                 d_optimizer.step()
 
