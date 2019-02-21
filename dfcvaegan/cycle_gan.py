@@ -166,7 +166,7 @@ def training_loop(dataloader_X, test_dataloader_X, opts):
         d_optimizer.zero_grad()
         D_Y_loss = -math.log(D_Y(images_X))
 
-        d_real_loss = D_Y_loss
+        d_real_loss = torch.tensor([D_Y_loss]).cuda()
         d_real_loss.backward()
         d_optimizer.step()
 
