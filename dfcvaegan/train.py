@@ -109,7 +109,7 @@ class Trainer:
                 recon_batch, mu, logvar = self.model.forward1(data)
 
                 d_optimizer.zero_grad()
-                d_real_loss = torch.sum(-torch.log(discriminator(data)))
+                d_real_loss = torch.mean(-torch.log(discriminator(data)))
                 # print(d_real_loss)
                 # print(d_real_loss.size())
                 # print(d_real_loss.grad)
@@ -118,7 +118,7 @@ class Trainer:
                 d_optimizer.step()
 
                 d_optimizer.zero_grad()
-                d_fake_loss = torch.sum(-torch.log(1 - discriminator(recon_batch)))
+                d_fake_loss = torch.mean(-torch.log(1 - discriminator(recon_batch)))
                 # d_fake_loss = torch.tensor(d_loss, requires_grad = True).cuda()
                 d_fake_loss.backward(retain_graph=True)
                 d_optimizer.step()
@@ -126,7 +126,7 @@ class Trainer:
                 self.optimizer.zero_grad()
                 vae_loss = self.mse_loss(recon_batch, data) - (0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))
                 g_loss = vae_loss
-                g_loss += -torch.sum(torch.log(discriminator(recon_batch)))*opts.loss_weight
+                g_loss += -torch.mean(torch.log(discriminator(recon_batch)))*opts.loss_weight
                 g_loss.backward()
                 self.optimizer.step()
 
