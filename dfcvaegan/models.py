@@ -122,7 +122,7 @@ class DCDiscriminator(nn.Module):
         out = F.relu(self.conv1(x))    # BS x 64 x 16 x 16
         out = F.relu(self.conv2(out))  # BS x 128 x 8 x 8
         out = F.relu(self.conv3(out))  # BS x 256 x 4 x 4
-        out = F.relu(self.conv4(out)).view(1, 3600)
+        out = F.relu(self.conv4(out)).view(-1, 1, 3600)
         out = self.linear(out)
         out = F.sigmoid(out)
         print(out)
