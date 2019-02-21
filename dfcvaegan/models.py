@@ -125,6 +125,6 @@ class DCDiscriminator(nn.Module):
         print(out.size())
         out = self.linear(out)
         print(out.size())
-        out = F.sigmoid(out)
+        out = F.sigmoid(out).squeeze()
         print(out)
         return out
