@@ -15,18 +15,19 @@ def pil_loader(path):
         return img.convert('RGB')
 
 class ArtDataset(Dataset):
-    def __init__(self, root, opts, target_transform=None):
+    def __init__(self, root, normalization, opts, target_transform=None):
         self.image_size = opts.image_size
         self.resize_transform = transforms.Compose([
                         transforms.Resize((self.image_size, self.image_size)),
                         transforms.ToTensor(),
-                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)) #fix normalization
+                        normalization #fix normalization
                     ])
 
         self.crop_transform = transforms.Compose([
                         transforms.RandomCrop((self.image_size, self.image_size)),
                         transforms.ToTensor(),
-                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+                        normalization
+                    ])
 
         self.random_crop = opts.random_crop
         if self.random_crop:
@@ -71,8 +72,15 @@ def load_data(opts):
     train_path = '/'.join([opts.data_path,'train'])
     test_path = '/'.join([opts.data_path,'test'])
 
-    train_dataset = ArtDataset(train_path, opts)
-    test_dataset = ArtDataset(test_path, opts)
+    if opts.normalize == 'standard':
+        normalization = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    elif opts.normalize == 'resnet':
+        normalization = transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
+    else:
+        raise NotImplementedError
+
+    train_dataset = ArtDataset(train_path, normalization, opts)
+    test_dataset = ArtDataset(test_path, normalization, opts)
 
     train_sampler = WeightedRandomSampler([1/train_dataset.class_counts[sample[1]] for sample in train_dataset.samples], len(train_dataset.samples))
     test_sampler = WeightedRandomSampler([1/test_dataset.class_counts[sample[1]] for sample in test_dataset.samples], len(test_dataset.samples))

@@ -1,0 +1,31 @@
+smallClass:
+0 Pointillism
+1 New_Realism
+2 Fauvism
+3 Synthetic_Cubism
+Length of dataset: 1580
+Using resize transform
+0 Pointillism
+1 New_Realism
+2 Fauvism
+3 Synthetic_Cubism
+Length of dataset: 397
+Using WeightedRandomSampler
+
+fiveClass:
+Using movements ['Art_Nouveau_Modern', 'Baroque', 'Cubism', 'Minimalism', 'Naive_Art_Primitivism']
+Using resize transform
+0 Art_Nouveau_Modern
+1 Baroque
+2 Cubism
+3 Minimalism
+4 Naive_Art_Primitivism
+Length of dataset: 11638
+Using resize transform
+0 Art_Nouveau_Modern
+1 Baroque
+2 Cubism
+3 Minimalism
+4 Naive_Art_Primitivism
+Length of dataset: 2914
+Using WeightedRandomSampler
