@@ -100,7 +100,7 @@ class CNNTrainer:
             correctly_classified += (linear_pred.max(dim = 1)[1] == labels).sum().item()
 
         test_loss /= len(self.test_loader.dataset)
-        accuracy /= len(self.test_loader.dataset)
+        accuracy = correctly_classified/len(self.test_loader.dataset)
         print('====> Test set loss: {:.4f}'.format(test_loss))
         print('====> Test set accuracy: {:.6f}'.format(accuracy))
         self.summary_writer.add_scalar('testing/loss', test_loss, cur_epoch)
