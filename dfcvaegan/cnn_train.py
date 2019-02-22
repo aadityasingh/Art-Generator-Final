@@ -27,7 +27,7 @@ import numpy as np
 import scipy
 import scipy.misc
 
-class Trainer:
+class CNNTrainer:
     def __init__(self, model, optimizer, loss, train_loader, test_loader, opts):
         self.model = model
         self.opts = opts
