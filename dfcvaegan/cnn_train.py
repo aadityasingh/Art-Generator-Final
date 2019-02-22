@@ -50,8 +50,8 @@ class CNNTrainer:
 
     def train(self, opts):
         self.model.train()
-        last_loss = 10000000
-        last_accuracy = 0
+        best_loss = 10000000
+        best_accuracy = 0
         for epoch in range(self.opts.start_epoch, self.opts.epochs):
             loss_list = []
             print("epoch {}...".format(epoch))
@@ -74,15 +74,15 @@ class CNNTrainer:
             if epoch % opts.test_every == 0:
                 new_loss, new_accuracy = self.test(epoch)
                 if epoch % opts.checkpoint_every == 0:
-                    if (new_loss < last_loss) or (new_accuracy > last_accuracy):
+                    if (new_loss < best_loss) or (new_accuracy > best_accuracy):
                         self.save_checkpoint({
                             'epoch': epoch + 1,
                             'state_dict': self.model.state_dict(),
                             'optimizer': self.optimizer.state_dict(),
                         }, filename=self.opts.new_chkpt_fname)
                         print("Saved new checkpoint!", epoch)
-                last_loss = new_loss
-                last_accuracy = new_accuracy
+                        best_loss = new_loss
+                        best_accuracy = new_accuracy
                 self.summary_writer.add_scalar('training/loss', epoch_avg_loss, epoch)
 
     def test(self, cur_epoch):
