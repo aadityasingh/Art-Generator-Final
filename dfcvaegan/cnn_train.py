@@ -90,7 +90,7 @@ class CNNTrainer:
         self.model.eval()
         test_loss = 0
         correctly_classified = 0
-        for i, (data, _) in enumerate(self.test_loader):
+        for i, (data, labels) in enumerate(self.test_loader):
             if self.cuda:
                 data = data.cuda()
                 labels = labels.cuda()
