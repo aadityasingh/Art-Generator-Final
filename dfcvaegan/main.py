@@ -84,7 +84,7 @@ def dfcvae_train(model, train_loader, test_loader, opts):
 
 def vaegan_train(model, train_loader, test_loader, opts):
 	optimizer = optim.Adam(model.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
-	loss = Loss(opts) # This will be ignored by the vaegan trainer
+	loss = Loss(opts)
 
 	discriminator = DCDiscriminator(conv_dim=opts.d_conv_dim)
 	if opts.cuda:
@@ -212,6 +212,7 @@ def create_parser():
 	# For vaegan
 	parser.add_argument('--d_conv_dim', type=int, default=64)
 	parser.add_argument('--loss_weight', type=float, default=1, help='How much to weight cross entropy against the MSE in VAEGAN')
+	parser.add_argument('--use_dfc', type=int, default=1, help='Either use dfc loss with gan or use mse loss. Defaults to dfc')
 
 	# For CNN
 	parser.add_argument('--cnn_type', default='resnet18', help='Choose from resnet18, resnet50')
