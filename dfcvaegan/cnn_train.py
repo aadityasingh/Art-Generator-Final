@@ -59,6 +59,7 @@ class CNNTrainer:
                 if self.cuda:
 #                    print('using GPU')
                     data = data.cuda()
+                    labels = labels.cuda()
                 data = Variable(data)
                 self.optimizer.zero_grad()
                 linear_pred = self.model(data)
@@ -92,6 +93,7 @@ class CNNTrainer:
         for i, (data, _) in enumerate(self.test_loader):
             if self.cuda:
                 data = data.cuda()
+                labels = labels.cuda()
             data = Variable(data)
             linear_pred = self.model(data)
             test_loss += self.loss(linear_pred, labels).item()
