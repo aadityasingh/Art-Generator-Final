@@ -53,7 +53,7 @@ class Trainer:
 
     def dfcvae_train(self, opts):
         self.model.train()
-        last_loss = 10000000
+        best_loss = 10000000
         for epoch in range(self.opts.start_epoch, self.opts.epochs):
             loss_list = []
             print("epoch {}...".format(epoch))
@@ -77,14 +77,14 @@ class Trainer:
             if epoch % opts.test_every == 0:
                 new_loss = self.test(epoch)
                 if epoch % opts.checkpoint_every == 0:
-                    if new_loss < last_loss:
+                    if new_loss < best_loss:
                         self.save_checkpoint({
                             'epoch': epoch + 1,
                             'state_dict': self.model.state_dict(),
                             'optimizer': self.optimizer.state_dict(),
                         }, filename=self.opts.new_chkpt_fname)
                         print("Saved new checkpoint!", epoch)
-                last_loss = new_loss
+                        best_loss = new_loss
                 self.summary_writer.add_scalar('training/loss', epoch_avg_loss, epoch)
                 self.summary_writer.add_scalar('training/learning_rate', new_lr, epoch)
                 self.save_samples(epoch)
