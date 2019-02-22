@@ -211,7 +211,8 @@ def create_parser():
 
 	# For vaegan
 	parser.add_argument('--d_conv_dim', type=int, default=64)
-	parser.add_argument('--loss_weight', type=float, default=1, help='How much to weight cross entropy against the MSE in VAEGAN')
+	parser.add_argument('--d_weight', type=float, default=1, help='How much to weight the cross entropy term in VAEGAN')
+	parser.add_argument('--dfc_weight', type=float, default=1, help='How much to weight dfc/mse term in VAEGAN')
 	parser.add_argument('--use_dfc', type=int, default=1, help='Either use dfc loss with gan or use mse loss. Defaults to dfc')
 
 	# For CNN

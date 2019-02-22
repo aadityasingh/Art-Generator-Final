@@ -51,7 +51,7 @@ class ArtDataset(Dataset):
         path, target = self.samples[index]
         sample = pil_loader(path)
         if (sample.size[0] < self.image_size) or (sample.size[1] < self.image_size):
-            print("Small image so resizing up", path)
+            # print("Small image so resizing up", path)
             sample = self.resize_transform(sample)
         elif self.random_crop:
             sample = self.crop_transform(sample)
