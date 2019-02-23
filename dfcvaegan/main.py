@@ -52,9 +52,8 @@ def make_cnn(opts):
 	fixed_layers = PYTORCH_REAL_RESNET_LAYERS - opts.retrainable_layers
 	for i, child in enumerate(model.children()):
 		if i < fixed_layers:
-			continue
-		for param in child.parameters():
-			param.requires_grad = False
+			for param in child.parameters():
+				param.requires_grad = False
 
 	num_ftrs = model.fc.in_features
 	model.fc = nn.Linear(num_ftrs,len(opts.movements))
@@ -132,22 +131,32 @@ def cnn_train(model, train_loader, test_loader, opts):
 
 	trainer.train(opts)
 
-def eval(model, test_loader, opts):
+def eval(model, classifier, test_loader, opts):
 	checkpoint = torch.load('/'.join([opts.base_path,'runs',opts.run,'checkpoints',opts.load_from_chkpt]), map_location='cpu')
 	model.load_state_dict(checkpoint['state_dict'])
 
-	evaluator = Evaluator(model, test_loader, opts)
+	run_data_type = opts.run.split("Class")[0]
+	checkpoint = torch.load('/'.join([opts.base_path,'cnn_runs',run_data_type+"ClassRes18R1",'checkpoints',"checkpoint.pth.tar"]), map_location='cpu')
+	classifier.load_state_dict(checkpoint['state_dict'])
+
+	evaluator = Evaluator(model, classifier, test_loader, opts)
 
 	if opts.eval_type == 'all':
 		evaluator.generate()
 		evaluator.cluster()
 		evaluator.interpolate()
+		evaluator.four_by_four()
+		evaluator.latent_grid()
 	elif opts.eval_type == 'randgen':
 		evaluator.generate()
 	elif opts.eval_type == 'cluster':
 		evaluator.cluster()
 	elif opts.eval_type == 'transform':
 		evaluator.interpolate()
+	elif opts.eval_type == 'grid':
+		evaluator.four_by_four()
+	elif opts.eval_type == 'real_cluster':
+		evaluator.latent_grid()
 	else:
 		raise NotImplementedError
 
@@ -205,9 +214,13 @@ def create_parser():
 	parser.add_argument('--dfc_path', default='D_Xfull.pkl', help='Path beyond base_path to get to pkl or checkpoint file... example: runs/fiveClassTrueTrue/checkpoints/checkpoint.pth.tar')
 
 	# Evaluation arguments
-	parser.add_argument('--eval_type', dest='eval_type', default='all', help='Choose from randgen, cluster, transform, all')
+	parser.add_argument('--eval_type', dest='eval_type', default='all', help='Choose from randgen, cluster, transform, grid, real_cluster, all')
+	# Note for eval, we always use the Res18R1 CNN trained on that dataset
 	parser.add_argument('--op_samples', dest='op_samples', type=int, default=400, help='Number of images to do eval_type on and plot')
 	parser.add_argument('--pca_components', dest='pca_components', type=int, default=6, help='Number of PCA components to show')
+	parser.add_argument('--random_pick', dest='random_pick', type=int, default=0, help="Whether or not to pick images to interpolate randomly")
+	# TODO make intermediate a passable parameter... not enough time rn tho
+	# parser.add_argument('--intermediate', dest='intermediate', type=int, default=16, help='How many intermediate images to have in interpolation')
 
 	# For vaegan
 	parser.add_argument('--d_conv_dim', type=int, default=64)
@@ -266,7 +279,8 @@ if __name__ == "__main__":
 		opts.cuda = 0
 		opts.batch_size = opts.op_samples
 		model, _, test_loader = make_model(opts)
-		eval(model, test_loader, opts)
+		classifier, _, _ = make_cnn(opts)
+		eval(model, classifier, test_loader, opts)
 	else:
 		raise NotImplementedError
 	# gen_image('./runs/checkpoints/checkpoint2.pth.tar')

@@ -3,7 +3,7 @@ import torch.nn.init as init
 import torch.utils.data
 import torchvision.utils as tvut
 import argparse
-import torch as nn
+import torch.nn as nn
 from torch.autograd import Variable
 
 from model import VAE
@@ -28,7 +28,7 @@ from tqdm import tqdm
 COLORS = ['r', 'g', 'b', 'c', 'm', 'k']
 
 class Evaluator:
-	def __init__(self, model, test_loader, opts):
+	def __init__(self, model, classifier, test_loader, opts):
 		self.eval_dir = '/'.join([opts.base_path, 'runs', opts.run, 'eval'])
 		self.pca_dir = '/'.join([self.eval_dir, 'cluster'])
 		self.gen_dir = '/'.join([self.eval_dir, 'random'])
@@ -48,12 +48,20 @@ class Evaluator:
 		self.sample_set = iter(self.test_loader).next()
 		print("Samples in memory")
 		self.images = self.sample_set[0]
+		print(self.images.shape)
+		
 		self.latents = self.model.encode(self.images)[0].data.numpy() # Note the [0] is to extract the mean
 		print("Encoded latents")
 		self.labels = self.sample_set[1].data.numpy()
 		self.latent_means = None
 		self.latent_stds = None
 		self.normalized_latents = None
+
+		self.classifier = classifier
+		self.classifier.eval()
+		self.num_movements = len(opts.movements)
+
+		self.sfmax = nn.Softmax(dim=1)
 
 		self.opts = opts
 
@@ -75,7 +83,7 @@ class Evaluator:
 		print("Finished PCA fit... moving to graphing")
 
 		fig1, axes1 = plt.subplots(self.opts.pca_components, 1, sharex=True, sharey=True)
-		plt.setp(axes1, xlim=(-10, 10), ylim=(-1, len(self.opts.movements)), xticks=[-5, 0, 5], yticks=list(range(len(self.opts.movements))), yticklabels=self.opts.movements)
+		plt.setp(axes1, xlim=(-10, 10), ylim=(-1, self.num_movements), xticks=[-5, 0, 5], yticks=list(range(self.num_movements)), yticklabels=self.opts.movements)
 		fig2, axes2 = plt.subplots(1, 1)
 		plt.setp(axes2, xlim=(-10, 10), ylim=(-10, 10))
 		for batch_idx, (data, labels) in enumerate(tqdm(self.test_loader)):
@@ -97,65 +105,121 @@ class Evaluator:
 		fig2.savefig('/'.join([self.pca_dir, f'Y2_X1']))
 
 	def generate(self):
-		self.save_image(torch.randn(len(self.opts.movements), self.opts.latent_dim), 'random')
+		self.save_image(torch.randn(self.num_movements, self.opts.latent_dim), 'random')
 		# save_samples(torch.randn(10, 800), 'random3.png')
 		print("Saved random images")
 
-		centers = np.zeros((len(self.opts.movements), self.opts.latent_dim))
-		noisy = np.zeros((len(self.opts.movements), self.opts.latent_dim))
-		for i in range(len(self.opts.movements)):
+		centers = np.zeros((self.num_movements, self.opts.latent_dim))
+		noisy = np.zeros((self.num_movements, self.opts.latent_dim))
+		for i in range(self.num_movements):
 			# print(np.where(self.labels == i))
 			centers[i, :] = np.mean(self.latents[np.where(self.labels == i)], axis=0)
 			noisy[i, :] = centers[i, :] + np.random.randn(self.opts.latent_dim)*0.5
 			# print(centers[i, :])
 
-		self.save_image(torch.from_numpy(centers).float(), 'center_', movements=True)
+		self.save_image(torch.from_numpy(centers).float(), '/'.join([self.gen_dir, 'center_']), movements=True)
 		print("Saved center images")
-		self.save_image(torch.from_numpy(noisy).float(), 'noisy_center_', movements=True)
+		self.save_image(torch.from_numpy(noisy).float(), '/'.join([self.gen_dir, 'noisy_center_']), movements=True)
 		print("Saved noisy center images")
 
 	def interpolate(self):
+		movement_latents = [0]*self.num_movements
+		saved = [False]*self.num_movements
+		if self.opts.random_pick:
+			for i, movement in enumerate(self.opts.movements):
+				filtered_latents = self.latents[np.where(self.labels == i)]
+				if len(filtered_latents):
+					print("NO MOVEMENT LATENT FOUND SAD")
+					return
+				movement_latents[i] = filtered_latents[np.random.randint(len(filtered_latents))]
+		else:
+			for i, label in enumerate(self.labels):
+				if not saved[label]:
+					movement_latents[label] = self.latents[i]
+					saved[label] = True
+				if False not in saved:
+					break
+			if False in saved:
+				print("NO MOVEMENT LATENT FOUND SAD")
+				return
+		print("Found movement latents, interpolating now...")
+		# First part is generating paired crosses, their line graphs, and also bar plots (just in case i feel like gif'ing)
+		for i in range(self.num_movements):
+			for j in range(i+1, self.num_movements):
+				diff = movement_latents[j] - movement_latents[i]
+				to_stack = []
+				to_stack.append(movement_latents[i])
+				for k in range(15):
+					to_stack.append(movement_latents[i]+diff*(k+1)/15)
+				stack_tensor = torch.from_numpy(np.stack(to_stack)).float()
+
+				name = self.opts.movements[i] + "To" + self.opts.movements[j]
+				utils.create_dir('/'.join([self.trans_dir, name]))
+				self.save_samples(stack_tensor, '/'.join([self.trans_dir, name]))
+				self.save_samples(stack_tensor, '/'.join([self.trans_dir, name+"Horizontal"]), rows=1, columns=16)
+				tensors = self.save_image(stack_tensor, '/'.join([self.trans_dir, name, '/']))
+				print(tensors.shape)
+				classes = utils.to_data(self.sfmax(self.classifier(tensors)))
+				fig, axes = plt.subplots(1, 1)
+				plt.setp(axes2, xlim=(0, 1), ylim=(0, 1))
+				for i in range(self.num_movements):
+					axes.plot(np.linspace(0, 1, 16), classes[:, i], COLORS[i]+'-')
+				axes.savefig('/'.join([self.trans_dir, name+"Graph.png"]))
+				print(name, 'done')
+
+	def four_by_four(self):
 		pass
 
-	def merge_images(self, sources, k=10):
-	    """Creates a grid consisting of pairs of columns, where the first column in
-	    each pair contains images source images and the second column in each pair
-	    contains images generated by the CycleGAN from the corresponding images in
-	    the first column.
-	    """
-	    _, _, h, w = sources.shape
-	    # row = int(np.sqrt(10)) # TODO: 10 is the hardcoded batch size
-	    row = 4
-	    merged = np.zeros([3, row*h, row*w])
-	    for idx, s in enumerate(sources):
-	        
-	        i = idx // row
-	        j = idx % row
-	        merged[:, i*h:(i+1)*h, j*h:(j+1)*h] = s
-	        # merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t
-	    return merged.transpose(1, 2, 0)
+	def latent_grid(self):
+		pass
+
+	def merge_images(self, sources, rows=4, columns=4):
+		"""Creates a grid consisting of pairs of columns, where the first column in
+		each pair contains images source images and the second column in each pair
+		contains images generated by the CycleGAN from the corresponding images in
+		the first column.
+		"""
+		# print(sources.shape)
+		_, _, h, w = sources.shape
+		# row = int(np.sqrt(10)) # TODO: 10 is the hardcoded batch size
+		merged = np.zeros([3, rows*h, columns*w])
+		# print(merged.shape)
+		for idx, s in enumerate(sources):
+			print(s.shape)
+
+			i = idx // columns
+			j = idx % rows
+			# print(j*w)
+			# print((j+1)*w)
+			# print(merged[:, i*h:(i+1)*h, j*w:(j+1)*w].shape)
+
+			merged[:, i*h:(i+1)*h, j*w:(j+1)*w] = s
+			# merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t
+		return merged.transpose(1, 2, 0)
 
 
-	def save_samples(self, latent, filename):
-	    fake_X = self.model.decode(latent)
+	def save_samples(self, latent, filename, rows=4, columns=4):
+		fake_X = self.model.decode(latent)
 
-	    fake_X = utils.to_data(fake_X)
+		fake_X = utils.to_data(fake_X)
 
-	    merged = merge_images(fake_X)
-	    path = os.path.join(os.path.join(os.path.dirname(__file__),'generated'), filename)
-	    scipy.misc.imsave(path, merged)
-	    print('Saved {}'.format(path))
+		merged = self.merge_images(fake_X, rows=rows, columns=columns)
+		# path = os.path.join(os.path.join(os.path.dirname(__file__),'generated'), filename)
+		scipy.misc.imsave(filename+".png", merged)
+		# print('Saved {}'.format(path))
 
 	def save_image(self, latent, fileroot, movements=False):
-		generated = self.model.decode(latent)
+		generated_tensors = self.model.decode(latent)
+		print(generated_tensors.shape)
 
-		generated = utils.to_data(generated)
+		generated = utils.to_data(generated_tensors)
 		if movements:
 			for i, image in enumerate(generated):
-				scipy.misc.imsave('/'.join([self.gen_dir, fileroot+self.opts.movements[i]+".png"]), image.transpose(1, 2, 0))
+				scipy.misc.imsave(fileroot+self.opts.movements[i]+".png", image.transpose(1, 2, 0))
 		else:
 			for i, image in enumerate(generated):
-				scipy.misc.imsave('/'.join([self.gen_dir, fileroot+str(i)+".png"]), image.transpose(1, 2, 0))
+				scipy.misc.imsave(fileroot+str(i)+".png", image.transpose(1, 2, 0))
+		return generated_tensors
 
 # translation = False
 # if translation:
