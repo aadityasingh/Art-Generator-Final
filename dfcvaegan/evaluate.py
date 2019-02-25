@@ -4,6 +4,7 @@ import torch.utils.data
 import torchvision.utils as tvut
 import argparse
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.autograd import Variable
 
 from model import VAE
@@ -49,7 +50,7 @@ class Evaluator:
 		print("Samples in memory")
 		self.images = self.sample_set[0]
 		print(self.images.shape)
-		
+
 		self.latents = self.model.encode(self.images)[0].data.numpy() # Note the [0] is to extract the mean
 		print("Encoded latents")
 		self.labels = self.sample_set[1].data.numpy()
@@ -128,7 +129,7 @@ class Evaluator:
 		if self.opts.random_pick:
 			for i, movement in enumerate(self.opts.movements):
 				filtered_latents = self.latents[np.where(self.labels == i)]
-				if len(filtered_latents):
+				if len(filtered_latents) == 0:
 					print("NO MOVEMENT LATENT FOUND SAD")
 					return
 				movement_latents[i] = filtered_latents[np.random.randint(len(filtered_latents))]
@@ -158,20 +159,34 @@ class Evaluator:
 				self.save_samples(stack_tensor, '/'.join([self.trans_dir, name]))
 				self.save_samples(stack_tensor, '/'.join([self.trans_dir, name+"Horizontal"]), rows=1, columns=16)
 				tensors = self.save_image(stack_tensor, '/'.join([self.trans_dir, name, '/']))
-				print(tensors.shape)
-				classes = utils.to_data(self.sfmax(self.classifier(tensors)))
+				# print(tensors.shape)
+				classes = utils.to_data(self.sfmax(self.classifier(F.upsample(tensors, size=(224, 224), mode='bilinear'))))
 				fig, axes = plt.subplots(1, 1)
-				plt.setp(axes2, xlim=(0, 1), ylim=(0, 1))
-				for i in range(self.num_movements):
-					axes.plot(np.linspace(0, 1, 16), classes[:, i], COLORS[i]+'-')
-				axes.savefig('/'.join([self.trans_dir, name+"Graph.png"]))
+				plt.setp(axes, xlim=(0, 1), ylim=(0, 1))
+				for k in range(self.num_movements):
+					axes.plot(np.linspace(0, 1, 16), classes[:, k], COLORS[k]+'-')
+				fig.savefig('/'.join([self.trans_dir, name+"Graph.png"]))
 				print(name, 'done')
 
-	def four_by_four(self):
-		pass
-
 	def latent_grid(self):
-		pass
+		print("Conducting PCA")
+		if self.normalized_latents:
+			pass
+		else:
+			self.latent_means = np.mean(self.latents, axis=0)
+			self.latent_stds = np.std(self.latents, axis=0)
+			print(self.latent_means.shape)
+			print(self.latent_stds.shape)
+			self.normalized_latents = (self.latents-self.latent_means)/self.latent_stds
+			print(self.normalized_latents.shape)
+
+		pca = PCA(n_components=self.opts.pca_components)
+		pca.fit(self.normalized_latents)
+		print("Finished PCA fit... moving to graphing")
+		for pca1 in np.linspace(-5, 5, 1000):
+			for pca2 in np.linspace(-5, 5, 1000):
+				pass
+
 
 	def merge_images(self, sources, rows=4, columns=4):
 		"""Creates a grid consisting of pairs of columns, where the first column in
@@ -184,11 +199,11 @@ class Evaluator:
 		# row = int(np.sqrt(10)) # TODO: 10 is the hardcoded batch size
 		merged = np.zeros([3, rows*h, columns*w])
 		# print(merged.shape)
+		# print(rows, columns)
 		for idx, s in enumerate(sources):
-			print(s.shape)
-
+			# print(s.shape)
 			i = idx // columns
-			j = idx % rows
+			j = idx % columns
 			# print(j*w)
 			# print((j+1)*w)
 			# print(merged[:, i*h:(i+1)*h, j*w:(j+1)*w].shape)
@@ -210,7 +225,7 @@ class Evaluator:
 
 	def save_image(self, latent, fileroot, movements=False):
 		generated_tensors = self.model.decode(latent)
-		print(generated_tensors.shape)
+		# print(generated_tensors.shape)
 
 		generated = utils.to_data(generated_tensors)
 		if movements:

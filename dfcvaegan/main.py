@@ -7,7 +7,6 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import cycle_gan
 from torch.autograd import Variable
 
 import os
@@ -136,7 +135,7 @@ def eval(model, classifier, test_loader, opts):
 	model.load_state_dict(checkpoint['state_dict'])
 
 	run_data_type = opts.run.split("Class")[0]
-	checkpoint = torch.load('/'.join([opts.base_path,'cnn_runs',run_data_type+"ClassRes18R1",'checkpoints',"checkpoint.pth.tar"]), map_location='cpu')
+	checkpoint = torch.load('/'.join([opts.base_path,'cnn_runs',run_data_type+"ClassRes18R0",'checkpoints',"checkpoint.pth.tar"]), map_location='cpu')
 	classifier.load_state_dict(checkpoint['state_dict'])
 
 	evaluator = Evaluator(model, classifier, test_loader, opts)
@@ -153,8 +152,6 @@ def eval(model, classifier, test_loader, opts):
 		evaluator.cluster()
 	elif opts.eval_type == 'transform':
 		evaluator.interpolate()
-	elif opts.eval_type == 'grid':
-		evaluator.four_by_four()
 	elif opts.eval_type == 'real_cluster':
 		evaluator.latent_grid()
 	else:
@@ -214,7 +211,7 @@ def create_parser():
 	parser.add_argument('--dfc_path', default='D_Xfull.pkl', help='Path beyond base_path to get to pkl or checkpoint file... example: runs/fiveClassTrueTrue/checkpoints/checkpoint.pth.tar')
 
 	# Evaluation arguments
-	parser.add_argument('--eval_type', dest='eval_type', default='all', help='Choose from randgen, cluster, transform, grid, real_cluster, all')
+	parser.add_argument('--eval_type', dest='eval_type', default='all', help='Choose from randgen, cluster, transform, real_cluster, all')
 	# Note for eval, we always use the Res18R1 CNN trained on that dataset
 	parser.add_argument('--op_samples', dest='op_samples', type=int, default=400, help='Number of images to do eval_type on and plot')
 	parser.add_argument('--pca_components', dest='pca_components', type=int, default=6, help='Number of PCA components to show')
@@ -230,22 +227,12 @@ def create_parser():
 
 	# For CNN
 	parser.add_argument('--cnn_type', default='resnet18', help='Choose from resnet18, resnet50')
-	parser.add_argument('--retrainable_layers', type=int, default=1, help='Choose from [0,1,2] using pytorch layers in resnet... Last layer is always retrained')
+	parser.add_argument('--retrainable_layers', type=int, default=0, help='Choose from [0,1,2] using pytorch layers in resnet... Last layer is always retrained')
 
 	# Training hyper-parameters
 	# parser.add_argument('--train_iters', type=int, default=2000, help='The number of training iterations to run (you can Ctrl-C out earlier if you want).')
 	# parser.add_argument('--beta1', type=float, default=0.5)
 	# parser.add_argument('--beta2', type=float, default=0.999)
-
-	# Saving directories and checkpoint/sample iterations
-	# parser.add_argument('--checkpoint_dir', type=str, default='checkpoints_cyclegan')
-	# parser.add_argument('--sample_dir', type=str, default='samples_cyclegan')
-	# parser.add_argument('--load', type=str, default=None)
-	# parser.add_argument('--log_step', type=int , default=10)
-	# parser.add_argument('--sample_every', type=int , default=100)
-
-
-
 
 	return parser
 
