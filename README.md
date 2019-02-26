@@ -1,7 +1,7 @@
 # Art-Generator-Final
 
 This project was worked on in two phases.
-Phase 1: The three of us were working for our graduate machine learning class (6.867) at MIT. The code was distributed over three folders, representing the contributions of each team member (since the pieces were pretty disjoin, and to avoid merge conflicts). These folders are dfcvae (aaditya), vaegan (eric), and cnn (albert). This report is summarized by the pdf at this link: TODO ADD LINK
+Phase 1: The three of us were working for our graduate machine learning class (6.867) at MIT. The code was distributed over three folders, representing the contributions of each team member (since the pieces were pretty disjoin, and to avoid merge conflicts). These folders are dfcvae (aaditya), vaegan (eric), and cnn (albert). This report is summarized by the pdf at this link: https://drive.google.com/open?id=19QMeeYPee2LWgEx3Jki3Ybl5uu2KFjSX.
 
 Phase 2: In this phase, we entered the more research-y portion and aaditya refactored all the code to just be runnable from one folder: dfcvaegan. All current dev work, latest model training files, and evaluation files can be found in this folder. To view a slide deck documenting our work, experiments, and results, see: https://docs.google.com/presentation/d/1tfQgde0GEWku1mEv-c4XfJjOjB_0v9yClfOw0vs7qXE/edit?usp=sharing. This work was presented at the MIT College of Computing Launch Poster Session.
 
