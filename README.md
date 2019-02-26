@@ -1,11 +1,14 @@
 # Art-Generator-Final
 
-We trained a variety of models. The one we use for generation is located in the dfcvae folder. A summary of this project/the project report is found in the pdf file.
+This project was worked on in two phases.
+Phase 1: The three of us were working for our graduate machine learning class (6.867) at MIT. The code was distributed over three folders, representing the contributions of each team member (since the pieces were pretty disjoin, and to avoid merge conflicts). These folders are dfcvae (aaditya), vaegan (eric), and cnn (albert). This report is summarized by the pdf at this link: TODO ADD LINK
 
-Note that the models were all trained using the wikiart dataset, which is available here: TODO ADD LINK
+Phase 2: In this phase, we entered the more research-y portion and aaditya refactored all the code to just be runnable from one folder: dfcvaegan. All current dev work, latest model training files, and evaluation files can be found in this folder. To view a slide deck documenting our work, experiments, and results, see: https://docs.google.com/presentation/d/1tfQgde0GEWku1mEv-c4XfJjOjB_0v9yClfOw0vs7qXE/edit?usp=sharing. This work was presented at the MIT College of Computing Launch Poster Session.
+
+Note that the models were all trained using the wikiart dataset, which is available here: http://www.cs-chan.com/source/ICIP2017/wikiart.zip.
 
 ## Dev folder (located in dfcvaegan/)
-This is the folder where active project work is being done. This folder combines aspects of the other folders and basically aims to coalesce the codebases from different people. The only setup this folder 
+This is the folder where active project work is being done. This folder combines aspects of the other folders and basically aims to coalesce the codebases from different people. Note that, although we used GCP to run things, the code is general and should be able to be run on any GPU. There are command line arguments (base_path, data_path, etc.) that must be changed from the defaults in this case, but it should run smoothly.
 
 For this part of the project, MIT graciously granted us some GCP credits to use. However, there is a lot more baggage to using GCP than there is in AWS, so I am documenting the setup below:
 
@@ -33,9 +36,9 @@ This guide is somewhat specific to the ComputingChallenge Project we were a part
 ## Deep Feature Consistent Variational Autoencoder (located in folder dfcvae/)
 To run this, you will need to add a few folders. Create folders data/ runs/ samples/. In runs/, create folders checkpoints/ and logs/. Currently, the model is configured to run on three art categories. In the data/ folder, create a folder train3/. In that folder, create test/ and train/ folders. In each of these folders, add in 3 art style folders with the corresponding images. This is the folder we used for our Graduate Machine Learning project report. Since then, we have moved forward with the project, and the most relevant folder is DFCVAEGAN, the name originating from our use of the GAN discriminator as our deep feature extractor
 
-## TODO VAEGAN folder
+## TODO VAEGAN folder (@Eric)
 
-## TODO CNN folder
+## TODO CNN folder (@Albert)
 
 ## Old files
 To view some older versions/messier code that was the starting point of this project (before we cleaned it up), visit: https://github.com/eric-qian-d/Art-Generator/tree/master.
