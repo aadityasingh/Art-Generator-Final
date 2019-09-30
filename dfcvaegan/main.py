@@ -76,13 +76,11 @@ def dfcvae_train(model, train_loader, test_loader, opts):
 
 	trainer = Trainer(model, optimizer, loss, train_loader, test_loader, opts)
 
-	# print(trainer)
-
 	trainer.dfcvae_train(opts)
 
 def vaegan_train(model, train_loader, test_loader, opts):
 	optimizer = optim.Adam(model.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)
-	loss = Loss(opts)
+	loss = Loss(opts) # Just used for construction of trainer
 
 	discriminator = DCDiscriminator(conv_dim=opts.d_conv_dim)
 	if opts.cuda:
@@ -105,9 +103,8 @@ def vaegan_train(model, train_loader, test_loader, opts):
 
 	trainer = Trainer(model, optimizer, loss, train_loader, test_loader, opts)
 
-	# print(trainer)
-
 	trainer.vaegan_train(discriminator, d_optimizer, opts)
+	# Note vaegan_train does not actually use the loss specified in construction, since it uses its own GAN loss
 
 def cnn_train(model, train_loader, test_loader, opts):
 	# From keras script (thanks albert!)
@@ -125,8 +122,6 @@ def cnn_train(model, train_loader, test_loader, opts):
 		optimizer.load_state_dict(checkpoint['optimizer'])
 
 	trainer = CNNTrainer(model, optimizer, loss, train_loader, test_loader, opts)
-
-	# print(trainer)
 
 	trainer.train(opts)
 
